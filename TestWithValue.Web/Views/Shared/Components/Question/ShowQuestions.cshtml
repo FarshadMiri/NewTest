@@ -1,0 +1,183 @@
+﻿@* @using TestWithValue.Domain.ViewModels.Question
+
+@model ShowQuestionsWithSelectedOptionViewModel
+
+<div id="questionContainer">
+    <!-- نمایش متن سوال -->
+    <p>@Model.QuestionText</p>
+
+    <form id="quizForm" method="post">
+        <div>
+            @foreach (var option in Model.Options)
+            {
+                <div>
+                    <input type="radio" name="answer" value="@option.Value" id="option-@option.OptionId" data-optionid="@option.OptionId" />
+                    <label for="option-@option.OptionId">@option.OptionText</label>
+                </div>
+            }
+        </div>
+
+        <!-- ارسال شناسه سوال به صورت hidden -->
+        <input type="hidden" name="questionId" value="@Model.QuestionId" />
+        <input type="hidden" name="testId" value="@Model.TestId" />
+    </form>
+
+
+    <!-- دکمه‌های قبلی و بعدی -->
+    <div>
+        @if (Model.CurrentQuestionIndex > 0)
+        {
+            <button id="previousQuestion" onclick="loadQuestion(@Model.CurrentQuestionIndex - 1, @Model.TestId)">سوال قبلی</button>
+        }
+
+        @if (Model.CurrentQuestionIndex < @ViewBag.TotalQuestions - 1)
+        {
+            <button id="nextQuestion" onclick="submitAndLoadNextQuestion(@Model.CurrentQuestionIndex + 1, @Model.TestId)">سوال بعدی</button>
+        }
+        else
+        {
+            <!-- دکمه ثبت نهایی و مشاهده نتیجه در سوال آخر -->
+            <button id="submitQuiz" onclick="submitQuiz(@Model.TestId)">ثبت جواب سوالات و دیدن نتیجه آزمون</button>
+        }
+
+    </div>
+    <div>
+        <span id="timer"></span> <!-- تایمر -->
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    
+
+        <script>
+            // بررسی وجود زمان باقی‌مانده در localStorage
+            var timerDuration = localStorage.getItem('timerDuration') ? parseInt(localStorage.getItem('timerDuration')) : 10 * 60;
+
+            if (window.location.pathname !== '@Url.Action("ShowResult", "Quiz")') {
+                var countdownTimer = setInterval(function () {
+                    var minutes = Math.floor(timerDuration / 60);
+                    var seconds = timerDuration % 60;
+                    document.getElementById('timer').innerText = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+                    // ذخیره زمان باقی‌مانده در localStorage
+                    localStorage.setItem('timerDuration', timerDuration);
+
+                    if (timerDuration <= 0) {
+                        clearInterval(countdownTimer);
+                        localStorage.removeItem('timerDuration'); // حذف زمان پس از پایان
+                        window.location.href = '@Url.Action("Start", "Quiz")'; // هدایت پس از پایان زمان
+                    }
+
+                    timerDuration--;
+                }, 1000);
+            }
+
+
+            // ارسال پاسخ و بارگذاری سوال بعدی
+            function loadQuestion(index, testId) {
+                // ابتدا سوال را بارگذاری می‌کنیم
+                $.ajax({
+                    url: '@Url.Action("ShowQuestions", "Quiz")',
+                    type: 'GET',
+                    data: { index: index, testId: testId }, // پاس دادن testId
+                    success: function (result) {
+                        $('#questionContainer').html(result);
+
+                        // پس از بارگذاری موفق سوال، questionId جدید را از فرم گرفته و سپس پاسخ را بارگذاری می‌کنیم
+                        var questionId = $('input[name="questionId"]').val();
+
+                        // سپس پاسخ قبلی را بارگذاری می‌کنیم
+                        $.ajax({
+                            url: '@Url.Action("GetAnswer", "Quiz")',
+                            type: 'GET',
+                            data: { questionId: questionId, testId: testId }, // پاس دادن testId به همراه questionId
+                            success: function (data) {
+                                // بررسی می‌کنیم آیا کاربر پاسخی داده است یا خیر
+                                if (data && data.optionId) {
+                                    // پیدا کردن گزینه مربوطه و تیک زدن آن
+                                    $('#option-' + data.optionId).prop('checked', true);
+                                }
+                            }
+                        });
+                    },
+                    error: function () {
+                        alert('خطا در بارگذاری سوال');
+                    }
+                });
+            }
+
+            function submitAndLoadNextQuestion(index, testId) {
+                // ارسال پاسخ فعلی و بارگذاری سوال بعدی
+                var questionId = $('input[name="questionId"]').val();
+                var selectedOptionId = $('input[name="answer"]:checked').data('optionid');
+                var selectedOptionValue = $('input[name="answer"]:checked').val();
+
+                if (!selectedOptionId) {
+                    alert('لطفا یک گزینه را انتخاب کنید!');
+                    return;
+                }
+
+
+                var answerData = {
+                    questionId: questionId,
+                    optionId: selectedOptionId,
+                    testId: testId,
+                    AnswerValue: selectedOptionValue
+                };
+
+                $.ajax({
+                    url: '@Url.Action("SaveAnswer", "Quiz")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(answerData),
+                    success: function () {
+                        loadQuestion(index, testId); // بارگذاری سوال بعدی
+                    },
+                    error: function () {
+                        alert('خطایی در ثبت پاسخ رخ داد!');
+                    }
+                });
+            }
+
+            // ارسال نهایی و مشاهده نتیجه آزمون
+            function submitQuiz(testId) {
+                var questionId = $('input[name="questionId"]').val();
+                var selectedOptionId = $('input[name="answer"]:checked').data('optionid');
+                var selectedOptionValue = $('input[name="answer"]:checked').val();
+
+                if (!selectedOptionId) {
+                    alert('لطفا یک گزینه را انتخاب کنید!');
+                    return;
+                }
+
+                var answerData = {
+                    questionId: questionId,
+                    optionId: selectedOptionId,
+                    testId: testId,
+                    AnswerValue: selectedOptionValue
+                };
+
+                // ارسال داده‌ها به صورت JSON
+                $.ajax({
+                    url: '@Url.Action("SaveAnswer", "Quiz")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(answerData),
+                    success: function () {
+                        // پس از ثبت موفق، تایمر را متوقف کرده و localStorage را پاک کنید
+                        clearInterval(countdownTimer);
+                        localStorage.removeItem('timerDuration');
+
+                        // سپس به صفحه نتیجه هدایت شوید
+                        window.location.href = '@Url.Action("ShowResult", "Quiz")' + '?testId=' + testId;
+                    },
+                    error: function () {
+                        alert('خطایی در ثبت پاسخ رخ داد!');
+                    }
+                });
+            }
+
+
+        </script>
+</div>
+ *@
+

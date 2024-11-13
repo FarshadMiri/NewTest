@@ -1,0 +1,46 @@
+﻿@using TestWithValue.Domain.ViewModels.Result
+@model ShowResultViewModel
+
+
+
+<div class="topics-container">
+    @foreach (var topic in Model.Topics)
+    {
+        <div class="card">
+            <h3>@topic.TopicName</h3>
+            <!-- ارسال topicId و testId به متد addToCart -->
+            <button onclick="addToCart(@topic.TopicId)">افزودن به سبد خرید</button>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function addToCart(topicId) {
+            console.log("Sending Topic ID:", topicId); // برای بررسی اینکه topicId ارسال می‌شود
+
+            var data = {
+                topicId: topicId
+            };
+
+            $.ajax({
+                url: '@Url.Action("AddToCart", "Cart")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (response) {
+                    // پس از موفقیت به صفحه ShowCart هدایت شو
+                    window.location.href = '@Url.Action("ShowCart", "Cart")';
+                },
+                error: function (xhr) {
+                    console.log("خطا در افزودن به سبد خرید:", xhr.responseText);
+                }
+            });
+
+        }
+      
+    </script>
+}
+
+
+

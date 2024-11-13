@@ -1,0 +1,116 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Newtonsoft.Json
+@using TestWithValue.Domain.OperationResult
+@inject SignInManager<IdentityUser> SignInManager
+
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TestWithValue.Web</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/TestWithValue.Web.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">TestWithValue.Web</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1 ml-auto">
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <li class="nav-item ml-auto">
+                                <form asp-controller="Auth" asp-action="Logout" method="post">
+                                    <button type="submit" class="btn nav-link text-dark">خروج</button>
+                                </form>
+                            </li>
+                            <li class="nav-item ml-auto">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="UserInfo">درخواست نامه </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item ml-auto">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="Login">ورود</a>
+                            </li>
+                            <li class="nav-item ml-auto">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="Register">ثبت نام</a>
+                            </li>
+                           
+
+                        }
+                    </ul>
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Quiz" asp-action="Start">Quiz</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Cart" asp-action="ShowCart">نمایش سبد خرید</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="CompleteUserInfo"> تکمیل اطلاعات تکمیلی </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Chat" asp-action="Tasks">وظایف </a>
+                        </li>
+
+                        
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container body-content">
+        <!-- نمایش پیام‌های TempData -->
+        @if (TempData["OperationResult"] != null)
+        {
+            var operationResult = JsonConvert.DeserializeObject<OperationResult>(TempData["OperationResult"].ToString());
+            var messageType = operationResult.Success ? "alert-success" : "alert-danger";
+            <div id="operationMessage" class="alert @messageType">
+                @operationResult.Message
+            </div>
+        }
+
+        <!-- اینجا محتوای صفحه قرار می‌گیرد -->
+        @RenderBody()
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 1403 - TestWithValue.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/quiz.js"></script>
+    <script>
+        // بعد از بارگذاری صفحه پیام TempData را مخفی کن
+        window.onload = function () {
+            var message = document.getElementById("operationMessage");
+            if (message) {
+                setTimeout(function () {
+                    message.style.display = "none";
+                }, 2000); // بعد از 2 ثانیه مخفی می‌شود
+            }
+        };
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

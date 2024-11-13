@@ -1,0 +1,103 @@
+﻿ @using Stimulsoft.Report.Mvc
+@using System.Security.Claims
+@using TestWithValue.Domain.ViewModels.UserInfo
+@model UserInfoViewModel
+
+@{
+    ViewData["Title"] = "User Info";
+}
+
+@{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // دریافت UserId از Identity
+}
+
+<!-- نمایش گزارش -->
+@Html.StiNetCoreViewer(new StiNetCoreViewerOptions()
+{
+    Theme = Stimulsoft.Report.Web.StiViewerTheme.Office2010Blue,
+    Actions =
+    {
+        GetReport = "ShowRequest", // اکشن که گزارش را برمی‌گرداند
+        ViewerEvent = "ViewEvent"  // اکشن برای رویدادهای ویور
+    }
+})
+
+<div id="pdfContainer"></div>
+
+
+<button id="requestEditButton">درخواست ویرایش</button>
+
+@section Scripts {
+    <script src="https://cdn.stimulsoft.com/js/stimulsoft.viewer.js"></script>
+    <link href="https://cdn.stimulsoft.com/css/stimulsoft.viewer.css" rel="stylesheet" />
+    <!-- استفاده از CDN برای SignalR -->
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.12/dist/browser/signalr.min.js"></script>
+
+    <script>
+        // اتصال به هاب SignalR
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/supportHub")
+            .build();
+
+        // شروع اتصال
+        connection.start().then(function () {
+            console.log("اتصال به هاب برقرار شد");
+        }).catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        // رویداد کلیک روی دکمه
+        document.getElementById('requestEditButton').addEventListener('click', async function () {
+            try {
+                // فراخوانی اکشن EditRequest برای دریافت داده
+                const response = await fetch('/User/RequestEdit', { method: 'POST' });
+                const result = await response.json();
+
+                if (result.success) {
+                    // اطلاعات وظیفه
+                    const userId = '@userId'; // شناسه کاربر از سمت سرور
+                    const title = 'درخواست ویرایش PDF';
+                    const taskDate = new Date(); // تنظیم تاریخ وظیفه به تاریخ فعلی
+
+                    // فراخوانی متد AddTask برای افزودن وظیفه به لیست
+                    connection.invoke("AddTask", userId, title, taskDate).then(function () {
+                        alert('وظیفه جدید به لیست پشتیبان‌ها اضافه شد.');
+                    }).catch(function (err) {
+                        console.error(err.toString());
+                    });
+
+                    // ارسال پیام به پشتیبان از طریق هاب
+                    connection.invoke("SendMessageToAgent", userId, title, result.message).then(function () {
+                        alert('درخواست شما به پشتیبان ارسال شد.');
+                    }).catch(function (err) {
+                        console.error(err.toString());
+                    });
+
+                } else {
+                    alert('خطا در ارسال درخواست: ' + result.message);
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                alert('خطا در انجام عملیات.');
+            }
+        });
+
+        // دریافت وظیفه جدید از هاب و اضافه کردن به رابط کاربری
+        connection.on("ReceiveNewTask", function (task) {
+            // ایجاد عنصر وظیفه و اضافه کردن آن به رابط کاربری
+            const taskElement = document.createElement("div");
+            taskElement.textContent = `وظیفه جدید: ${task.title} - ${new Date(task.taskDate).toLocaleString()}`;
+            document.getElementById("taskContainer").appendChild(taskElement);
+        });
+        connection.on("ReceivePdf", function (pdfUrl, ticketId) {
+            const link = document.createElement("a");
+            link.href = pdfUrl;  // استفاده از URL به جای مسیر فایل محلی
+            link.download = `Ticket_${ticketId}.pdf`;
+            link.textContent = "دانلود PDF جدید";
+            link.style.display = "block";
+            document.getElementById("pdfContainer").appendChild(link);
+        });
+    </script>
+
+
+}

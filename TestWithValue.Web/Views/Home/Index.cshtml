@@ -1,0 +1,211 @@
+﻿@model IEnumerable<TicketViewModel>﻿
+@using System.Security.Claims
+@using TestWithValue.Domain.ViewModels.Ticket
+@{
+    var isLoggedIn = TempData["isLoggedIn"] != null && (bool)TempData["isLoggedIn"];
+    var role = TempData["role"]?.ToString();
+}
+@{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // دریافت UserId از Identity
+}
+
+<div>
+    <h1>خوش آمدید!</h1>
+
+    @if (isLoggedIn)
+    {
+        @if (Model.Any())
+        {
+            <h2>لیست تیکت‌های شما</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>عنوان</th>
+                        <th>عملیات</th> <!-- ستون جدید برای عملیات -->
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ticket in Model)
+                    {
+                        <tr>
+                            <td>@ticket.Title</td>
+                            <td>
+                                @if (!ticket.IsClosed) // فقط برای تیکت‌های باز دکمه‌ها را نمایش دهید
+                                {
+                                    <button class="btn btn-danger close-ticket" data-ticket-id="@ticket.Id">بستن تیکت</button>
+                                    <button class="btn btn-info load-messages" data-ticket-id="@ticket.Id">بارگذاری پیام‌ها</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>شما هیچ تیکتی ندارید.</p>
+        }
+        <div id="chatContainer">
+            <h2>چت با پشتیبانی</h2>
+            <div id="messages" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc;"></div>
+
+            <!-- Input برای عنوان تیکت -->
+            <input type="text" id="ticketTitle" placeholder="عنوان تیکت خود را وارد کنید..." />
+
+            <!-- Input برای پیام -->
+            <input type="text" id="chatInput" placeholder="پیام خود را بنویسید..." />
+            <button id="sendMessageButton">ارسال</button>
+
+            <form id="fileUploadForm" enctype="multipart/form-data">
+               <input type="file" id="fileInput" name="file" />
+                 <button type="submit">ارسال فایل</button>
+            </form>
+        </div>
+    }
+    else if (!isLoggedIn)
+    {
+        <p>برای چت با پشتیبانی وارد حساب کاربری خود شوید.</p>
+    }
+    else if (role == "Agent")
+    {
+        <p>شما به عنوان پشتیبان وارد شده‌اید. برای چت به صفحه پشتیبانی بروید.</p>
+    }
+</div>
+
+@section Scripts {
+    <!-- استفاده از CDN برای SignalR -->
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.12/dist/browser/signalr.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/supportHub") // آدرس Hub در سرور
+                .build();
+
+            document.getElementById("fileUploadForm").addEventListener("submit", function (e) {
+              e.preventDefault(); // جلوگیری از بارگذاری مجدد صفحه
+
+                const fileInput = document.getElementById("fileInput");
+                const file = fileInput.files[0];
+                const title = document.getElementById("ticketTitle").value; // دریافت عنوان تیکت
+
+             if (file && title) {
+                  const formData = new FormData();
+                  formData.append("file", file);
+                  formData.append("userId", '@userId'); // دریافت UserId
+                  formData.append("title", title);
+
+        // استفاده از متد Fetch API برای ارسال فایل به هاب
+                    fetch("/supportHub/uploadFile", {
+                    method: "POST",
+                       body: formData
+                    }).then(response => {
+                       if (response.ok) {
+                      alert("فایل با موفقیت ارسال شد.");
+                fileInput.value = ""; // پاک کردن input فایل
+                    } else {
+                alert("خطایی در ارسال فایل رخ داد.");
+                   }
+        })         .catch(error => {
+                    console.error(error);
+        })             ;
+    }
+});
+
+            // Event listener برای دریافت پیام از پشتیبان
+            connection.on("ReceiveMessageFromAgent", function (agentId, message, ticketId) {
+                const messagesDiv = document.getElementById("messages");
+                const newMessage = document.createElement("div");
+                newMessage.textContent = 'پشتیبان (' + agentId + '): ' + message + ' (Ticket ID: ' + ticketId + ')';
+                messagesDiv.appendChild(newMessage);
+            });
+
+            // ارسال پیام به پشتیبان
+            document.getElementById("sendMessageButton").addEventListener("click", function () {
+                const message = document.getElementById("chatInput").value;
+                const title = document.getElementById("ticketTitle").value; // دریافت عنوان تیکت
+                const userId = '@userId'; // دریافت UserId از Identity
+
+                if (message.trim() === "" || title.trim() === "") {
+                    return; // اگر پیام یا عنوان خالی است، کاری انجام نده
+                }
+
+                // فراخوانی متد SendMessageToAgent با عنوان و پیام
+                connection.invoke("SendMessageToAgent", userId, title, message)
+                    .then(() => {
+                        const messagesDiv = document.getElementById("messages");
+                        const newMessage = document.createElement("div");
+                        newMessage.textContent = 'شما: ' + message;
+                        messagesDiv.appendChild(newMessage);
+
+                        document.getElementById("chatInput").value = ""; // پاک کردن input بعد از ارسال
+                    })
+                    .catch(function (err) {
+                        console.error(err);
+                    });
+            });
+
+            // رویداد کلیک برای دکمه‌های بستن تیکت
+            document.querySelectorAll('.close-ticket').forEach(button => {
+                button.addEventListener('click', function () {
+                    const ticketId = this.getAttribute('data-ticket-id');
+                    connection.invoke("CloseTicket", ticketId)
+                        .then(response => {
+                            if (response.success) {
+                                alert(response.message);
+                                location.reload(); // بارگذاری مجدد صفحه برای مشاهده تغییرات
+                            } else {
+                                alert(response.message);
+                            }
+                        })
+                        .catch(err => console.error(err));
+                });
+            });
+
+            // رویداد کلیک برای دکمه‌های بارگذاری پیام‌ها
+            document.querySelectorAll('.load-messages').forEach(button => {
+                button.addEventListener('click', function () {
+                    const ticketId = this.getAttribute('data-ticket-id');
+                    connection.invoke("LoadMessagesForTicket", ticketId)
+                        .then(() => {
+                            // در اینجا می‌توانید پیامی برای موفقیت آمیز بودن بارگذاری نمایش دهید
+                            console.log("پیام‌ها بارگذاری شدند.");
+                        })
+                        .catch(err => console.error(err));
+                });
+            });
+          connection.on("ReceiveMessages", function (messages, ticketId) {
+    $("#messages").empty(); // پاک کردن پیام‌های قبلی
+    const userId = '@userId'; // دریافت UserId از Identity
+
+    messages.forEach(function (message) {
+        // تبدیل زمان به فرمت مناسب (به عنوان مثال: "HH:mm:ss" یا "yyyy-MM-dd HH:mm:ss")
+        const sentAt = new Date(message.sentAt); // فرض بر این است که message.sentAt یک رشته تاریخ است
+        const timeString = sentAt.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }); // فرمت زمان به فارسی
+
+        // اگر فرستنده پیام همان کاربر فعلی باشد
+        if (message.senderId === userId) {
+            $("#messages").append(`<div style="text-align: right;"><strong>شما:</strong> ${message.message} (Ticket ID: ${ticketId}) <span style="font-size: 0.8em;">(${timeString})</span></div>`);
+        } else if (message.senderId === "Agent") { // اگر فرستنده "Agent" باشد
+            $("#messages").append(`<div style="text-align: left;"><strong>پشتیبان:</strong> ${message.message} (Ticket ID: ${ticketId}) <span style="font-size: 0.8em;">(${timeString})</span></div>`);
+        } else {
+            // برای دیگر فرستنده‌ها (مثل پشتیبان‌های دیگر یا سیستم)
+            $("#messages").append(`<div style="text-align: left;"><strong>پشتیبان:</strong> ${message.message} (Ticket ID: ${ticketId}) <span style="font-size: 0.8em;">(${timeString})</span></div>`);
+        }
+    });
+
+    // اسکرول به پایین برای نمایش آخرین پیام
+    const messagesDiv = document.getElementById("messages");
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+});
+
+
+            // شروع اتصال به SignalR Hub
+            connection.start().then(function () {
+                console.log("اتصال برقرار شد.");
+            }).catch(function (err) {
+                console.error("مشکلی در اتصال به وجود آمده:", err);
+            });
+        });
+    </script>
+}

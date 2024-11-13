@@ -1,0 +1,40 @@
+﻿@model IEnumerable<TestWithValue.Domain.ActionMessages.ActionMessage>
+@if (Model != null && Model.Any())
+{
+    <div id="action-messages">
+        @foreach (var message in Model)
+        {
+            <div class="alert alert-@message.Type action-message">
+                @message.Message
+            </div>
+        }
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // زمان (به میلی‌ثانیه) که می‌خواهید پیام‌ها نمایش داده شوند
+        var displayDuration = 3000; // 5 ثانیه
+        var hideDelay = 1000; // زمان تأخیر برای پنهان کردن پیام‌ها (1 ثانیه)
+
+        // انتخاب همه پیام‌ها
+        var messages = document.querySelectorAll('.action-message');
+
+        console.log("Messages count:", messages.length); // بررسی تعداد پیام‌ها
+
+        messages.forEach(function (message, index) {
+            setTimeout(function () {
+                message.style.display = 'none'; // پنهان کردن پیام بعد از زمان تعیین شده
+                console.log("Hiding message: ", message);
+            }, displayDuration + (index * hideDelay)); // افزایش زمان پنهان‌سازی برای هر پیام
+        });
+    </script>
+}
+
+    
+
+
+
+
+
