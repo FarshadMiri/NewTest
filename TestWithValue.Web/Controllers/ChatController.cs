@@ -73,10 +73,11 @@ namespace TestWithValue.Web.Controllers
 
             var result = tasks.Select(t => new
             {
+                taskId = t.TaskId, // اضافه کردن taskId
                 title = t.Title,
                 isDone = t.IsDone,
-                date = t.TaskDate.ToString("yyyy-MM-dd"), // تاریخ به صورت میلادی
-                ticketId = t.TicketId // اضافه کردن TicketId
+                date = t.TaskDate.ToString("yyyy-MM-dd"),
+                ticketId = t.TicketId
             });
 
             return Json(result);

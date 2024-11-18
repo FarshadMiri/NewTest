@@ -42,6 +42,7 @@ namespace TestWithValue.Application.AllServicesAndInterfaces.Services
             // تبدیل داده‌های مدل به ViewModel
             return tasks.Select(t => new TaskViewModel
             {
+                 TicketId=t.TicketId,
                 TaskId = t.TaskId,
                 Title = t.Title,
                 TaskDate = t.TaskDate,

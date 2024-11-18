@@ -12,5 +12,6 @@ namespace TestWithValue.Domain.ViewModels.Task
         public string Title { get; set; } // عنوان وظیفه
         public DateOnly TaskDate { get; set; } // تاریخ وظیفه
         public bool IsDone { get; set; } // وضعیت انجام وظیفه
+        public int? TicketId {  get; set; }  
     }
 }

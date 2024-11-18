@@ -46,21 +46,21 @@ app.MapHub<SupportHub>("/supportHub");
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-// «Ã—«? SeedData œ— “„«‰ «Ã—«? »—‰«„Â
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
 
-//    try
-//    {
-//        var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-//        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-//        await IdentitySeedData.Initialize(services, userManager, roleManager);
-//    }
-//    catch (Exception ex)
-//    {
-//        Console.WriteLine($"Error during seeding data: {ex.Message}");
-//    }
-//}
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    try
+    {
+        var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        await IdentitySeedData.Initialize(services, userManager, roleManager);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error during seeding data: {ex.Message}");
+    }
+}
 
 app.Run();

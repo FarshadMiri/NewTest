@@ -47,17 +47,19 @@
                                 tasks.forEach(task => {
                                     console.log("TaskId:", task.taskId);  // نمایش taskId در کنسول
                                     $('#taskList').append(`
-                            <div class="task-item">
-                                <span>${task.title}</span>
-                                <span>${task.isDone ? "انجام شده" : "در انتظار"}</span>
-                                <input type="checkbox" ${task.isDone ? 'checked' : ''}
-                                       onchange="updateTaskStatus(${task.taskId}, this.checked)">
-                                <a href="/Chat/SupportChat?ticketId=${task.ticketId}" class="support-chat-btn">
-                                    بررسی وظیفه
-                                </a>
-                            </div>
-                        `);
+                <div class="task-item">
+                    <span>${task.title}</span>
+                    <span>${task.isDone ? "انجام شده" : "در انتظار"}</span>
+                    <span>Ticket ID: ${task.ticketId}</span> <!-- اضافه کردن TicketId به نمایش -->
+                    <input type="checkbox" ${task.isDone ? 'checked' : ''}
+                           onchange="updateTaskStatus(${task.taskId}, this.checked)">
+                    <a href="/Chat/SupportChat?ticketId=${task.ticketId}" class="support-chat-btn">
+                        بررسی وظیفه
+                    </a>
+                </div>
+            `);
                                 });
+
                             } else {
                                 $('#taskList').append('<p>هیچ وظیفه‌ای برای این تاریخ وجود ندارد.</p>');
                             }

@@ -1,27 +1,82 @@
 ﻿@using TestWithValue.Domain.ViewModels.Task
 @model IEnumerable<TaskViewModel>
 
-<h2>لیست درخواست ها </h2>
+<h2>لیست درخواست‌ها</h2>
 
 <table class="table">
     <thead>
         <tr>
-           
             <th>عنوان</th>
             <th>تاریخ</th>
             <th>وضعیت</th>
+            <th>جزئیات</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var task in Model)
         {
             <tr>
-                
                 <td>@task.Title</td>
                 <td>@task.TaskDate.ToString("yyyy-MM-dd")</td>
                 <td>@(task.IsDone ? "پاسخ داده شده" : "در انتظار")</td>
+                <td>
+                    <button class="btn btn-info btn-sm" onclick="showTicketMessages(@task.TicketId)">
+                        جزئیات
+                    </button>
+                </td>
             </tr>
         }
     </tbody>
 </table>
 
+<!-- Modal نمایش پیام‌های تیکت -->
+<div id="messageModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <h3>پیام‌های تیکت</h3>
+        <div id="messageList"></div>
+        <button onclick="closeModal()">بستن</button>
+    </div>
+</div>
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // تابع برای نمایش پیام‌های تیکت
+        function showTicketMessages(ticketId) {
+            $.ajax({
+                url: '/task/getticketmessages',
+                type: 'GET',
+                data: { ticketId: ticketId },
+                success: function (messages) {
+                    $('#messageList').empty(); // پاک کردن لیست قبلی
+
+                    if (messages.length > 0) {
+                        messages.forEach(message => {
+                            $('#messageList').append(`
+                                        <div class="message-item">
+                                            <p><strong>فرستنده:</strong> ${message.senderId}</p>
+                                            <p>${message.Message}</p>
+                                            <p><small>ارسال شده در: ${message.SentAt}</small></p>
+                                            ${message.FilePath ? `<a href="${message.FilePath}" target="_blank">دانلود فایل</a>` : ''}
+                                            <hr>
+                                        </div>
+                                    `);
+                        });
+                    } else {
+                        $('#messageList').html('<p>هیچ پیامی برای این تیکت وجود ندارد.</p>');
+                    }
+
+                    // نمایش Modal
+                    $('#messageModal').show();
+                },
+                error: function () {
+                    alert("خطایی رخ داده است. لطفا دوباره تلاش کنید.");
+                }
+            });
+        }
+
+        // بستن Modal
+        function closeModal() {
+            $('#messageModal').hide();
+        }
+    </script>
+}
