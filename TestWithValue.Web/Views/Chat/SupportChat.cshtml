@@ -57,7 +57,17 @@
             .build();
 
         const userId = '@userId'; // دریافت UserId از Identity
+        // دریافت ticketId از URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const ticketId = urlParams.get('ticketId');
 
+        // بارگذاری پیام‌ها برای تیکت انتخاب شده
+        if (ticketId) {
+            connection.invoke("LoadMessagesForTicket", ticketId)
+                .catch(function (err) {
+                    return console.error(err.toString());
+                });
+        }
         // دریافت پیام از کاربر به صورت لحظه‌ای
         connection.on("ReceiveMessageFromUser", function (userId, message, ticketId, title) {
             const messagesDiv = document.getElementById("messages");

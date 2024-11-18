@@ -115,7 +115,7 @@ namespace TestWithValue.Web.HubSupport
             await _taskService.AddTaskAsync(task);
 
             // ارسال وظیفه جدید به گروه پشتیبان‌ها
-            await Clients.Group("Agent").SendAsync("ReceiveNewTask", task);
+            //await Clients.Group("Agent").SendAsync("ReceiveNewTask", task);
         }
         public async Task SendMessageToAgent(string userId, string title, string message)
         {
@@ -306,47 +306,6 @@ namespace TestWithValue.Web.HubSupport
             return new { success = true, message = "تیکت با موفقیت بسته شد." };
         }
 
-        //[HttpPost]
-        //        public async Task<IActionResult> UploadFile(IFormFile file, string userId, string title)
-        //        {
-        //            if (file == null || file.Length == 0)
-        //            {
-        //                return BadRequest("فایلی انتخاب نشده است.");
-        //            }
-
-        //            var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-        //            var filePath = Path.Combine("wwwroot/uploads", uniqueFileName);
-
-        //            using (var stream = new FileStream(filePath, FileMode.Create))
-        //            {
-        //                await file.CopyToAsync(stream);
-        //            }
-
-        //            var existingTicket = await _ticketService.GetOpenTicketForUserByTitleAsync(userId, title);
-        //            int ticketId;
-
-        //            if (existingTicket == null)
-        //            {
-        //                var newTicketModel = new TicketViewModel
-        //                {
-        //                    Title = title,
-        //                    Description = "User has uploaded a file.",
-        //                    UserId = userId
-        //                };
-        //                await _ticketService.CreateTicketAsync(newTicketModel);
-        //                var ticket = await _ticketService.GetOpenTicketForUserByTitleAsync(userId, title);
-        //                ticketId = ticket.Id;
-        //            }
-        //            else
-        //            {
-        //                ticketId = existingTicket.Id;
-        //            }
-
-        ///*            await _ticketService.SaveMessageWithFileAsync(ticketId, userId, file.FileName, */uniqueFileName);
-
-        //            await Clients.Group("Agent").SendAsync("ReceiveFileFromUser", userId, file.FileName, ticketId);
-        //            return Ok();
-        //        }
 
     }
 }

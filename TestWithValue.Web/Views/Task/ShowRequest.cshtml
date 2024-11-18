@@ -1,0 +1,27 @@
+﻿@using TestWithValue.Domain.ViewModels.Task
+@model IEnumerable<TaskViewModel>
+
+<h2>لیست درخواست ها </h2>
+
+<table class="table">
+    <thead>
+        <tr>
+           
+            <th>عنوان</th>
+            <th>تاریخ</th>
+            <th>وضعیت</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var task in Model)
+        {
+            <tr>
+                
+                <td>@task.Title</td>
+                <td>@task.TaskDate.ToString("yyyy-MM-dd")</td>
+                <td>@(task.IsDone ? "پاسخ داده شده" : "در انتظار")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+

@@ -12,5 +12,7 @@ namespace TestWithValue.Application.Contract.Persistence
         Task<IEnumerable<Tbl_Task>> GetTasksByDateAsync(DateOnly date);
         Task AddTaskAsync(Tbl_Task task);
         Task UpdateTaskAsync(Tbl_Task task);
+        Task<IEnumerable<Tbl_Task>> GetTasksByUserIdAsync(string userId);
+        Task<Tbl_Task> GetTaskByIdAsync(int taskId);
     }
 }

@@ -3,17 +3,22 @@ using Microsoft.AspNetCore.Mvc;
 using TestWithValue.Application.AllServicesAndInterfaces.Services;
 using TestWithValue.Application.AllServicesAndInterfaces.Services_Interface;
 using System.Globalization;
+using Microsoft.AspNetCore.SignalR;
+using TestWithValue.Web.HubSupport;
+using TestWithValue.Domain.Enitities;
 namespace TestWithValue.Web.Controllers
 {
     [Authorize]
     public class ChatController : Controller
     {
         private readonly ITicketService _ticketService;
-        private readonly ITaskService _taskService;  
-        public ChatController(ITicketService ticketService, ITaskService taskService)
+        private readonly ITaskService _taskService;
+        private readonly IHubContext<SupportHub> _hubContext;
+        public ChatController(ITicketService ticketService, ITaskService taskService, IHubContext<SupportHub> hubContext)
         {
             _ticketService = ticketService;
-            _taskService = taskService;   
+            _taskService = taskService;
+            _hubContext = hubContext;
         }
         public IActionResult Index()
         {
@@ -34,16 +39,21 @@ namespace TestWithValue.Web.Controllers
 
             return Json(new { isLoggedIn = false });
         }
-        public async Task<IActionResult> SupportChat()
+        public async Task<IActionResult> SupportChat(string? ticketId)
         {
             // بررسی نقش پشتیبان
             if (User.IsInRole("Agent"))
             {
+                // اگر ticketId مقدار داشته باشد
+               
+
+                // دریافت لیست تمام تیکت‌ها
                 var tickets = await _ticketService.GetAllTicketsAsync();
                 return View(tickets); // ارسال لیست تیکت‌ها به ویو
-                                      // بازگشت به ویو SupportChat
             }
-            return RedirectToAction("Login", "Auth"); // در صورت عدم نقش صحیح، به صفحه ورود هدایت شود
+
+            // در صورت عدم نقش صحیح، به صفحه ورود هدایت شود
+            return RedirectToAction("Login", "Auth");
         }
 
         public IActionResult Tasks()
@@ -70,6 +80,16 @@ namespace TestWithValue.Web.Controllers
             });
 
             return Json(result);
+        }
+
+        [HttpPost("tasks/updatetaskstatus")]
+        public async Task<IActionResult> UpdateTaskStatus([FromBody] TaskStatusUpdateRequest request)
+        {
+            if (request.TaskId <= 0)
+                return BadRequest("Invalid TaskId");
+
+            await _taskService.UpdateTaskStatusAsync(request.TaskId, request.IsDone);
+            return Ok(new { message = "Task status updated successfully" });
         }
     }
 }

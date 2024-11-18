@@ -81,5 +81,20 @@ namespace TestWithValue.Data.Repository
             _context.tbl_Tasks.Update(task);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<Tbl_Task>> GetTasksByUserIdAsync(string userId)
+        {
+            return await _context.tbl_Tasks
+                         .Where(t => t.UserId == userId)
+                         .ToListAsync();
+        }
+
+        public async Task<Tbl_Task> GetTaskByIdAsync(int taskId)
+        {
+            return await _context.tbl_Tasks
+                .Include(t => t.User)
+                .Include(t => t.Ticket)
+                .FirstOrDefaultAsync(t => t.TaskId == taskId);
+        }
     }
 }

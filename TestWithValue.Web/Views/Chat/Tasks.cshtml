@@ -13,7 +13,7 @@
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
     <script src="https://babakhani.github.io/PersianWebToolkit/beta/lib/persian-date/dist/persian-date.js"></script>
     <script src="https://babakhani.github.io/PersianWebToolkit/beta/lib/persian-datepicker/dist/js/persian-datepicker.js"></script>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.12/dist/browser/signalr.min.js"></script>
 
     <script>
@@ -28,42 +28,35 @@
                 return console.error(err.toString());
             });
 
+            // تقویم تاریخ فارسی
             $('#datepicker').persianDatepicker({
                 inline: true,
                 format: 'YYYY/MM/DD',
                 onSelect: function (unixDate) {
                     const selectedDate = new Date(unixDate).toISOString().split('T')[0];
 
+                    // درخواست دریافت وظایف برای تاریخ مشخص
                     $.ajax({
-                        url: '@Url.Action("GetTasks", "Tasks")',
+                        url: '@Url.Action("GetTasks", "Tasks")', // مسیر به‌روز شده برای متد GetTasks
                         type: 'GET',
                         data: { date: selectedDate },
                         success: function (tasks) {
+                            console.log("Tasks:", tasks);  // نمایش داده‌های دریافت شده در کنسول
                             $('#taskList').empty();
                             if (tasks.length > 0) {
                                 tasks.forEach(task => {
+                                    console.log("TaskId:", task.taskId);  // نمایش taskId در کنسول
                                     $('#taskList').append(`
-                                        <div class="task-item">
-                                            <span>${task.title}</span>
-                                            <span>${task.isDone ? "انجام شده" : "در انتظار"}</span>
-                                            <button class="support-chat-btn" data-ticket-id="${task.ticketId}">
-                                                بررسی وظیفه 
-                                            </button>
-                                        </div>
-                                    `);
-                                });
-
-                                // افزودن رویداد کلیک برای دکمه‌های چت با پشتیبان
-                                $('.support-chat-btn').click(function () {
-                                    const ticketId = $(this).data('ticket-id');
-                                    // ارسال TicketId به متد LoadMessagesForTicket در SignalR Hub
-                                    connection.invoke("LoadMessagesForTicket", ticketId.toString())
-                                        .catch(function (err) {
-                                            return console.error(err.toString());
-                                        });
-
-                                    // همچنین می‌توانید به صفحه چت هدایت کنید
-                                    window.location.href = '/Chat/SupportChat?ticketId=' + ticketId;
+                            <div class="task-item">
+                                <span>${task.title}</span>
+                                <span>${task.isDone ? "انجام شده" : "در انتظار"}</span>
+                                <input type="checkbox" ${task.isDone ? 'checked' : ''}
+                                       onchange="updateTaskStatus(${task.taskId}, this.checked)">
+                                <a href="/Chat/SupportChat?ticketId=${task.ticketId}" class="support-chat-btn">
+                                    بررسی وظیفه
+                                </a>
+                            </div>
+                        `);
                                 });
                             } else {
                                 $('#taskList').append('<p>هیچ وظیفه‌ای برای این تاریخ وجود ندارد.</p>');
@@ -76,5 +69,25 @@
                 }
             });
         });
+
+        // تابع به‌روزرسانی وضعیت وظیفه
+        function updateTaskStatus(taskId, isDone) {
+            console.log("TaskId inside updateTaskStatus: ", taskId);  // بررسی taskId در این تابع
+
+            $.ajax({
+                url: '@Url.Action("UpdateTaskStatus", "Tasks")', // مسیر به‌روز شده برای متد UpdateTaskStatus
+                type: 'POST',
+                contentType: 'application/json',
+                dataType: 'json',  // اضافه کردن dataType
+                data: JSON.stringify({ taskId: taskId, isDone: isDone }), // ارسال داده‌ها به صورت JSON
+                success: function (response) {
+                    console.log(response.message);  // پیغام موفقیت
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);  // نمایش خطا
+                    alert("خطایی رخ داده است.");
+                }
+            });
+        }
     </script>
 }

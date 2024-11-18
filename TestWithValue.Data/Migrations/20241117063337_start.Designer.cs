@@ -12,8 +12,8 @@ using TestWithValue.Data;
 namespace TestWithValue.Data.Migrations
 {
     [DbContext(typeof(TestWithValueDbContext))]
-    [Migration("20241112100352_date")]
-    partial class date
+    [Migration("20241117063337_start")]
+    partial class start
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -449,6 +449,12 @@ namespace TestWithValue.Data.Migrations
                     b.Property<DateOnly>("TaskDate")
                         .HasColumnType("date");
 
+                    b.Property<string>("TaskDateString")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TicketId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -457,6 +463,10 @@ namespace TestWithValue.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("TaskId");
+
+                    b.HasIndex("TicketId")
+                        .IsUnique()
+                        .HasFilter("[TicketId] IS NOT NULL");
 
                     b.HasIndex("UserId");
 
@@ -814,9 +824,15 @@ namespace TestWithValue.Data.Migrations
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Task", b =>
                 {
+                    b.HasOne("TestWithValue.Domain.Enitities.Tbl_Ticket", "Ticket")
+                        .WithOne("Task")
+                        .HasForeignKey("TestWithValue.Domain.Enitities.Tbl_Task", "TicketId");
+
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
+
+                    b.Navigation("Ticket");
 
                     b.Navigation("User");
                 });
@@ -889,6 +905,8 @@ namespace TestWithValue.Data.Migrations
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Ticket", b =>
                 {
                     b.Navigation("Messages");
+
+                    b.Navigation("Task");
                 });
 #pragma warning restore 612, 618
         }
