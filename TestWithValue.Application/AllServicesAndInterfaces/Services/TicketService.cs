@@ -144,4 +144,24 @@ public class TicketService : ITicketService
 
         return ticketViewModels;
     }
+
+    public async Task UpdateMessageAsync(int ticketId, string newMessage)
+    {
+        // دریافت تمام پیام‌ها بر اساس TicketId
+        var messages = await _ticketRepository.GetMessagesByTicketIdAsync(ticketId);
+
+        if (messages == null || !messages.Any())
+        {
+            throw new Exception($"No messages found for Ticket ID {ticketId}");
+        }
+
+        // فرض: فقط اولین پیام را به‌روزرسانی می‌کنیم (یا معیار خاصی را انتخاب کنید)
+        var ticketMessage = messages.First();
+        ticketMessage.Message = newMessage;
+        ticketMessage.SentAt = DateTime.UtcNow;
+
+        // به‌روزرسانی پیام
+        await _ticketRepository.UpdateMessageAsync(ticketMessage);
+    }
 }
+

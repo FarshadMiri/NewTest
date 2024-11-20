@@ -54,8 +54,8 @@
                             $('#messageList').append(`
                                         <div class="message-item">
                                             <p><strong>فرستنده:</strong> ${message.senderId}</p>
-                                            <p>${message.Message}</p>
-                                            <p><small>ارسال شده در: ${message.SentAt}</small></p>
+                                            <p>${message.message}</p>
+                                            <p><small>ارسال شده در: ${message.sentAt}</small></p>
                                             ${message.FilePath ? `<a href="${message.FilePath}" target="_blank">دانلود فایل</a>` : ''}
                                             <hr>
                                         </div>

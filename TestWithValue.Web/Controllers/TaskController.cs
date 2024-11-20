@@ -41,7 +41,7 @@ namespace TestWithValue.Web.Controllers
         public async Task<IActionResult> GetTicketMessages(int ticketId)
         {
             // دریافت پیام‌های مربوط به تیکت
-            var messages = await _ticketService.GetTicketByIdAsync(ticketId);   
+            var messages = await _ticketService.GetMessagesByTicketIdAsync(ticketId);   
             if (messages == null)
             {
                 return Json(new { message = "هیچ پیامی برای این تیکت وجود ندارد." });

@@ -21,5 +21,6 @@ namespace TestWithValue.Application.AllServicesAndInterfaces.Services_Interface
         Task<TicketViewModel> GetTicketByIdAsync(int ticketId);
         Task<bool> CloseTicketAsync(int ticketId);
         Task<IEnumerable<TicketViewModel>> GetAllTicketsByUserIdAsync(string userId);
+        Task UpdateMessageAsync(int ticketId, string newMessage);
     }
 }

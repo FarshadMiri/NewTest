@@ -165,7 +165,7 @@
             // بررسی نام تیکت
             if (window.ticketTitle === "درخواست ویرایش PDF") { // بررسی نام تیکت
                 // ارسال پیام به سرور
-                connection.invoke("SendPdfToUser", window.userId, window.ticketId, message)
+                connection.invoke("SendEditToUser", window.userId, window.ticketId, message)
                     .catch(err => console.error(err));
             } else {
                 // ارسال پیام عادی به سرور

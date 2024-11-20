@@ -111,5 +111,19 @@ namespace TestWithValue.Persistence.Repositories
                              .Where(t => t.UserId == userId)
                              .ToListAsync();
         }
+
+        public async Task UpdateMessageAsync(Tbl_TicketMessage ticketMessage)
+        {
+            try
+            {
+                _context.tbl_TicketMessages.Update(ticketMessage);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                var inner = ex.InnerException.Message;
+                inner.Trim();
+            }
+        }
     }
 }

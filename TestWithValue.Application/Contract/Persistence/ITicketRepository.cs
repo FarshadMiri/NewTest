@@ -21,6 +21,7 @@ namespace TestWithValue.Application.Contract.Persistence
         Task<IEnumerable<Tbl_Ticket>> GetAllTicketsAsync();
         Task<IEnumerable<Tbl_TicketMessage>> GetMessagesByTicketIdAsync(int ticketId);
         Task<IEnumerable<Tbl_Ticket>> GetTicketsByUserIdAsync(string userId);
+        Task UpdateMessageAsync(Tbl_TicketMessage ticketMessage);
     }
 
 }

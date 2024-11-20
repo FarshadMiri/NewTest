@@ -175,6 +175,21 @@ namespace TestWithValue.Web.HubSupport
             await _ticketService.SaveMessageAsync(Convert.ToInt32(ticketId), agentId, message);
         }
 
+        public async Task SendEditToUser(string userId, string ticketId, string message)
+        {
+            try
+            {
+                // به‌روزرسانی پیام در پایگاه داده
+                await _ticketService.UpdateMessageAsync(Convert.ToInt32(ticketId), message);
+
+                // ارسال پیام به کلاینت
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in SendEditToUser: {ex.Message}");
+            }
+        }
+    
         public async Task SendPdfToUser(string userId, string ticketId, string message)
         {
             var pdfPath = ConvertMessageToPdf(message, userId, ticketId);
