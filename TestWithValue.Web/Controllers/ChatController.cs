@@ -4,8 +4,8 @@ using TestWithValue.Application.AllServicesAndInterfaces.Services;
 using TestWithValue.Application.AllServicesAndInterfaces.Services_Interface;
 using System.Globalization;
 using Microsoft.AspNetCore.SignalR;
-using TestWithValue.Web.HubSupport;
 using TestWithValue.Domain.Enitities;
+using TestWithValue.Web.Hubs.HubSupport;
 namespace TestWithValue.Web.Controllers
 {
     [Authorize]
@@ -45,11 +45,26 @@ namespace TestWithValue.Web.Controllers
             if (User.IsInRole("Agent"))
             {
                 // اگر ticketId مقدار داشته باشد
-               
+
 
                 // دریافت لیست تمام تیکت‌ها
                 var tickets = await _ticketService.GetAllTicketsAsync();
                 return View(tickets); // ارسال لیست تیکت‌ها به ویو
+            }
+
+            // در صورت عدم نقش صحیح، به صفحه ورود هدایت شود
+            return RedirectToAction("Login", "Auth");
+        }
+       
+        [Authorize(Roles = "Agent")]
+        public IActionResult SupportRequests()
+        {
+            if (User.IsInRole("Agent"))
+            {
+
+
+
+                return View(); // ارسال لیست تیکت‌ها به ویو
             }
 
             // در صورت عدم نقش صحیح، به صفحه ورود هدایت شود
@@ -76,8 +91,7 @@ namespace TestWithValue.Web.Controllers
                 taskId = t.TaskId, // اضافه کردن taskId
                 title = t.Title,
                 isDone = t.IsDone,
-                date = t.TaskDate.ToString("yyyy-MM-dd"),
-                ticketId = t.TicketId
+                date = t.TaskDate.ToString("yyyy-MM-dd")
             });
 
             return Json(result);

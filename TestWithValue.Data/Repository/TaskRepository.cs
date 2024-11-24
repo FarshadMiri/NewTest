@@ -94,8 +94,46 @@ namespace TestWithValue.Data.Repository
         {
             return await _context.tbl_Tasks
                 .Include(t => t.User)
-                .Include(t => t.Ticket)
                 .FirstOrDefaultAsync(t => t.TaskId == taskId);
+        }
+
+        public async Task SaveMessageAsync(Tbl_TaskMessage  taskMessage)
+        {
+            try
+            {
+                _context.tbl_TaskMessages.Add(taskMessage); // اضافه کردن پیام به جدول پیام‌ها
+                await _context.SaveChangesAsync(); // ذخیره تغییرات
+
+            }
+            catch (Exception ex)
+            {
+                var inner = ex.InnerException.Message;
+                inner = inner.Trim();
+
+                throw;
+            }
+        }
+
+        public async Task UpdateMessageAsync(Tbl_TaskMessage taskMessage)
+        {
+            try
+            {
+                _context.tbl_TaskMessages.Update(taskMessage);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                var inner = ex.InnerException.Message;
+                inner.Trim();
+            }
+        }
+
+        public  async Task<IEnumerable<Tbl_TaskMessage>> GetMessagesByTicketIdAsync(int taskId)
+        {
+            return await _context.tbl_TaskMessages
+         .Where(msg => msg.TaskId == taskId)
+         .OrderBy(msg => msg.SentAt)
+         .ToListAsync();
         }
     }
 }

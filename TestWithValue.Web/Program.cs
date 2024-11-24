@@ -4,7 +4,8 @@ using TestWithValue.Application.profile;
 using TestWithValue.Data;
 using TestWithValue.Data.SeedData;
 using TestWithValue.Infrastructure.IOC;
-using TestWithValue.Web.HubSupport;
+using TestWithValue.Web.Hubs.HubSupport;
+using TestWithValue.Web.Hubs.HubTask;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHub<SupportHub>("/supportHub");
+app.MapHub<TaskHub>("/taskhub");
 
 
 app.MapControllerRoute(

@@ -14,5 +14,8 @@ namespace TestWithValue.Application.Contract.Persistence
         Task UpdateTaskAsync(Tbl_Task task);
         Task<IEnumerable<Tbl_Task>> GetTasksByUserIdAsync(string userId);
         Task<Tbl_Task> GetTaskByIdAsync(int taskId);
+        Task SaveMessageAsync(Tbl_TaskMessage taskMessage); // برای ذخیره پیام
+        Task UpdateMessageAsync(Tbl_TaskMessage taskMessage);
+        Task<IEnumerable<Tbl_TaskMessage>> GetMessagesByTicketIdAsync(int taskId);
     }
 }

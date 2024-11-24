@@ -24,7 +24,9 @@ namespace TestWithValue.Data
         public DbSet<Tbl_Topic> tbl_Topics { get; set; }
         public DbSet<Tbl_User> tbl_Users { get; set; }
         public DbSet<Tbl_CartItem> tbl_CartItems { get; set; }
-        public DbSet<Tbl_TicketMessage>  tbl_TicketMessages { get; set; }
+        public DbSet<Tbl_TicketMessage> tbl_TicketMessages { get; set; }
+        public DbSet<Tbl_TaskMessage>  tbl_TaskMessages { get; set; }
+
         public DbSet<Tbl_Ticket>  tbl_Tickets  { get; set; }
         public DbSet<Tbl_TicketStatus> tbl_TicketStatus { get; set; }
 		public DbSet<Tbl_Province> tbl_Provinces { get; set; }

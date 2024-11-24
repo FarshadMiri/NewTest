@@ -15,7 +15,7 @@ using PdfSharpCore.Fonts;
 using TestWithValue.Application.AllServicesAndInterfaces.Services;
 using TestWithValue.Domain.Enitities;
 
-namespace TestWithValue.Web.HubSupport
+namespace TestWithValue.Web.Hubs.HubSupport
 {
     public class SupportHub : Hub
     {
@@ -24,7 +24,7 @@ namespace TestWithValue.Web.HubSupport
         public SupportHub(ITicketService ticketService, ITaskService taskService)
         {
             _ticketService = ticketService;
-            _taskService = taskService; 
+            _taskService = taskService;
         }
 
         public override async Task OnConnectedAsync()
@@ -106,9 +106,9 @@ namespace TestWithValue.Web.HubSupport
                 TaskDate = taskDateOnly, // استفاده از DateOnly
                 Title = title,           // تنظیم عنوان وظیفه
                 IsDone = false,
-                UserId = userId ,         // تنظیم UserId کاربر ایجادکننده وظیفه
-                 TicketId=ticketId
-                
+                UserId = userId,         // تنظیم UserId کاربر ایجادکننده وظیفه
+               
+
             };
 
             // افزودن وظیفه به دیتابیس
@@ -189,7 +189,7 @@ namespace TestWithValue.Web.HubSupport
                 Console.WriteLine($"Error in SendEditToUser: {ex.Message}");
             }
         }
-    
+
         public async Task SendPdfToUser(string userId, string ticketId, string message)
         {
             var pdfPath = ConvertMessageToPdf(message, userId, ticketId);
@@ -226,9 +226,9 @@ namespace TestWithValue.Web.HubSupport
 
                     using (var gfx = XGraphics.FromPdfPage(page))
                     {
-                        string fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Fonts","B-NAZANIN.TTF");
+                        string fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Fonts", "B-NAZANIN.TTF");
                         var fontResolver = GlobalFontSettings.FontResolver; // تنظیمات فونت برای PdfSharpCore
-                       XFont font = new XFont("B Nazanin", 12, XFontStyle.Regular);
+                        XFont font = new XFont("B Nazanin", 12, XFontStyle.Regular);
 
                         double margin = 20;
                         double y = margin;

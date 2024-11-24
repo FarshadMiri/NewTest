@@ -37,8 +37,10 @@ namespace TestWithValue.Application.profile
            .ReverseMap();
             CreateMap<Tbl_UserInfo, UserInfoViewModel>().ReverseMap();
             CreateMap<Tbl_ReportInfo, ReportViewModel>().ReverseMap();
-           
+
             CreateMap<Tbl_Task, TaskViewModel>().ReverseMap();
+            CreateMap<Tbl_TaskMessage, TaskMessageViewModel>().ReverseMap();
+
 
 
 

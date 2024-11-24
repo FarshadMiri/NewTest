@@ -26,8 +26,5 @@ namespace TestWithValue.Domain.Enitities
         public IdentityUser User { get; set; } // ارجاع به IdentityUser
         public string TaskDateString { get; set; } // تاریخ به صورت رشته
 
-        [ForeignKey("Ticket")]
-        public int? TicketId { get; set; }
-        public Tbl_Ticket Ticket { get; set; }
     }
 }

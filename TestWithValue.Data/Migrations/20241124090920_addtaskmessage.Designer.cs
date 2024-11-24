@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TestWithValue.Data;
 
@@ -11,9 +12,11 @@ using TestWithValue.Data;
 namespace TestWithValue.Data.Migrations
 {
     [DbContext(typeof(TestWithValueDbContext))]
-    partial class TestWithValueDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241124090920_addtaskmessage")]
+    partial class addtaskmessage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -449,6 +452,9 @@ namespace TestWithValue.Data.Migrations
                     b.Property<string>("TaskDateString")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("TicketId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -457,6 +463,10 @@ namespace TestWithValue.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("TaskId");
+
+                    b.HasIndex("TicketId")
+                        .IsUnique()
+                        .HasFilter("[TicketId] IS NOT NULL");
 
                     b.HasIndex("UserId");
 
@@ -520,9 +530,6 @@ namespace TestWithValue.Data.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("TaskId")
-                        .HasColumnType("int");
-
                     b.Property<int>("TicketStatusId")
                         .HasColumnType("int");
 
@@ -533,8 +540,6 @@ namespace TestWithValue.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("TaskId");
 
                     b.HasIndex("TicketStatusId");
 
@@ -846,9 +851,15 @@ namespace TestWithValue.Data.Migrations
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Task", b =>
                 {
+                    b.HasOne("TestWithValue.Domain.Enitities.Tbl_Ticket", "Ticket")
+                        .WithOne("Task")
+                        .HasForeignKey("TestWithValue.Domain.Enitities.Tbl_Task", "TicketId");
+
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
+
+                    b.Navigation("Ticket");
 
                     b.Navigation("User");
                 });
@@ -866,17 +877,11 @@ namespace TestWithValue.Data.Migrations
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Ticket", b =>
                 {
-                    b.HasOne("TestWithValue.Domain.Enitities.Tbl_Task", "Task")
-                        .WithMany()
-                        .HasForeignKey("TaskId");
-
                     b.HasOne("TestWithValue.Domain.Enitities.Tbl_TicketStatus", "TicketStatus")
                         .WithMany()
                         .HasForeignKey("TicketStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Task");
 
                     b.Navigation("TicketStatus");
                 });
@@ -938,6 +943,8 @@ namespace TestWithValue.Data.Migrations
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Ticket", b =>
                 {
                     b.Navigation("Messages");
+
+                    b.Navigation("Task");
                 });
 #pragma warning restore 612, 618
         }

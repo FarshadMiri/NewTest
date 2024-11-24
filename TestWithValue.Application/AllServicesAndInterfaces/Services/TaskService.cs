@@ -7,6 +7,7 @@ using TestWithValue.Application.AllServicesAndInterfaces.Services_Interface;
 using TestWithValue.Application.Contract.Persistence;
 using TestWithValue.Domain.Enitities;
 using TestWithValue.Domain.ViewModels.Task;
+using TestWithValue.Domain.ViewModels.Ticket;
 
 namespace TestWithValue.Application.AllServicesAndInterfaces.Services
 {
@@ -42,7 +43,6 @@ namespace TestWithValue.Application.AllServicesAndInterfaces.Services
             // تبدیل داده‌های مدل به ViewModel
             return tasks.Select(t => new TaskViewModel
             {
-                 TicketId=t.TicketId,
                 TaskId = t.TaskId,
                 Title = t.Title,
                 TaskDate = t.TaskDate,
@@ -71,6 +71,50 @@ namespace TestWithValue.Application.AllServicesAndInterfaces.Services
                 task.IsDone = isDone;
                 await _taskRepository.UpdateTaskAsync(task);
             }
+        }
+
+        public async Task  SaveMessageAsync(int taskId, string senderId, string message)
+        {
+            var taskMessage = new Tbl_TaskMessage
+            {
+                 TaskId = taskId,
+                SenderId = senderId,
+                Message = message,
+                SentAt = DateTime.Now
+            };
+
+            await _taskRepository.SaveMessageAsync(taskMessage); // ذخیره پیام
+        }
+
+        public async Task UpdateMessageAsync(int taskId, string newMessage)
+        {
+            // دریافت تمام پیام‌ها بر اساس TicketId
+            var messages = await _taskRepository.GetMessagesByTicketIdAsync(taskId);
+
+            if (messages == null || !messages.Any())
+            {
+                throw new Exception($"No messages found for task ID {taskId}");
+            }
+
+            // فرض: فقط اولین پیام را به‌روزرسانی می‌کنیم (یا معیار خاصی را انتخاب کنید)
+            var taskMessage = messages.First();
+            taskMessage.Message = newMessage;
+            taskMessage.SentAt = DateTime.UtcNow;
+
+            // به‌روزرسانی پیام
+            await _taskRepository.UpdateMessageAsync(taskMessage);
+
+        }
+
+        public async Task<IEnumerable<TaskMessageViewModel>> GetMessagesByTicketIdAsync(int taskId)
+        {
+            var messages = await _taskRepository.GetMessagesByTicketIdAsync(taskId);
+            return messages.Select(msg => new TaskMessageViewModel
+            {
+                SenderId = msg.SenderId,
+                Message = msg.Message,
+                SentAt = msg.SentAt
+            });
         }
     }
 

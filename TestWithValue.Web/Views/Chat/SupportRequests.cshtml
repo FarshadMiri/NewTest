@@ -1,0 +1,78 @@
+﻿@{
+    ViewData["Title"] = "Support Requests";
+}
+
+<h1>Support Requests</h1>
+
+<div id="taskContainer">
+    <h3>Tasks:</h3>
+    <!-- وظایف در اینجا نشان داده می‌شوند -->
+</div>
+
+<div id="messageContainer">
+    <h3>User Requests:</h3>
+    <!-- درخواست‌های کاربران در اینجا نشان داده می‌شوند -->
+</div>
+
+@section Scripts{
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.12/dist/browser/signalr.min.js"></script>
+
+    <script>
+        // ایجاد اتصال SignalR به هاب
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/taskhub") // URL هاب شما
+            .build();
+
+        // دریافت وظایف جدید
+        connection.on("ReceiveNewTask", function (task) {
+            const container = document.getElementById('taskContainer');
+            const taskDiv = document.createElement('div');
+            taskDiv.className = 'task';
+            taskDiv.innerHTML = `
+                    <h4>${task.title}</h4>
+                    <p>Date: ${task.taskDate}</p>
+                    <p>Status: <strong>${task.isDone ? "Done" : "Pending"}</strong></p>
+                `;
+            container.appendChild(taskDiv);
+        });
+
+        // دریافت درخواست‌های کاربران جدید
+        connection.on("ReceiveRequestFromUser", function (userId, message, title) {
+            const container = document.getElementById('messageContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.innerHTML = `
+                    <h4>Ticket ID: ${ticketId} - ${title}</h4>
+                    <p>User ID: ${userId}</p>
+                    <p>Message: ${message}</p>
+                `;
+            container.appendChild(messageDiv);
+        });
+
+        // اتصال به SignalR
+        connection.start().then(function () {
+            console.log("Connected to SignalR!");
+        }).catch(function (err) {
+            console.error("Error while starting connection: " + err);
+        });
+    </script>
+
+}
+<style>
+    .task, .message {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+    }
+
+    .task h4, .message h4 {
+        margin: 0;
+    }
+
+    .task p, .message p {
+        margin: 5px 0;
+    }
+</style>
+
+

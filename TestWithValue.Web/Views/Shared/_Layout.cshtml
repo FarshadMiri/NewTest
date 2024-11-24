@@ -37,6 +37,12 @@
                             <li class="nav-item ml-auto">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Task" asp-action="ShowRequest">پیگیری در خواست </a>
                             </li>
+                            @if (User.IsInRole("Agent"))
+                            {
+                                <li class="nav-item ml-auto">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Chat" asp-action="SupportRequests">درخواست‌های پشتیبان</a>
+                                </li>
+                            }
 
                         }
                         else

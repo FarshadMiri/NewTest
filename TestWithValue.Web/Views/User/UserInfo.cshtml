@@ -36,7 +36,7 @@
     <script>
         // اتصال به هاب SignalR
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/supportHub")
+            .withUrl("/taskhub")
             .build();
 
         // شروع اتصال
@@ -67,7 +67,7 @@
                     });
 
                     // ارسال پیام به پشتیبان از طریق هاب
-                    connection.invoke("SendMessageToAgent", userId, title, result.message).then(function () {
+                    connection.invoke("SendRequestToAgent", userId, title, result.message).then(function () {
                         alert('درخواست شما به پشتیبان ارسال شد.');
                     }).catch(function (err) {
                         console.error(err.toString());
