@@ -20,6 +20,8 @@ namespace TestWithValue.Application.AllServicesAndInterfaces.Services_Interface
         Task SaveMessageAsync(int taskId, string senderId, string message); // ذخیره پیام
         Task UpdateMessageAsync(int taskId, string newMessage);
         Task<IEnumerable<TaskMessageViewModel>> GetMessagesByTicketIdAsync(int taskId);
+        Task<TaskViewModel> GetOpenTaskForUserByTitleAsync(string userId, string title);
+        Task<IEnumerable<TaskViewModel>> GetAllTasksAsync();
 
 
 

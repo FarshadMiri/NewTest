@@ -65,6 +65,9 @@
                     }).catch(function (err) {
                         console.error(err.toString());
                     });
+                    connection.on("ShowMessage", function (message) {
+                        alert(message); // نمایش پیام به کاربر
+                    });
 
                     // ارسال پیام به پشتیبان از طریق هاب
                     connection.invoke("SendRequestToAgent", userId, title, result.message).then(function () {

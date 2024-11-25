@@ -856,7 +856,7 @@ namespace TestWithValue.Data.Migrations
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_TaskMessage", b =>
                 {
                     b.HasOne("TestWithValue.Domain.Enitities.Tbl_Task", "Task")
-                        .WithMany()
+                        .WithMany("Messages")
                         .HasForeignKey("TaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -922,6 +922,11 @@ namespace TestWithValue.Data.Migrations
                     b.Navigation("Answer");
 
                     b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Task", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Test", b =>

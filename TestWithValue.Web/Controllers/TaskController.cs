@@ -12,7 +12,7 @@ namespace TestWithValue.Web.Controllers
         public TaskController(ITaskService taskService, ITicketService ticketService)
         {
             _taskService = taskService;
-            _ticketService = ticketService; 
+            _ticketService = ticketService;
         }
         public IActionResult Index()
         {
@@ -37,18 +37,21 @@ namespace TestWithValue.Web.Controllers
             // ارسال لیست taskها به ویو
             return View(tasks);
         }
-        [HttpGet("task/getticketmessages")]
-        public async Task<IActionResult> GetTicketMessages(int ticketId)
+        [HttpGet("task/gettaskmessages")]
+        public async Task<IActionResult> GetTaskMessages(int taskId)
         {
-            // دریافت پیام‌های مربوط به تیکت
-            var messages = await _ticketService.GetMessagesByTicketIdAsync(ticketId);   
-            if (messages == null)
+            var messages = await _taskService.GetMessagesByTicketIdAsync(taskId);
+            if (messages == null || !messages.Any())
             {
-                return Json(new { message = "هیچ پیامی برای این تیکت وجود ندارد." });
+                return Json(new { messages = new List<object>(), isDone = false });
             }
 
-            return Json(messages);
+            var task = await _taskService.GetTaskByIdAsync(taskId);
+            var isDone = task?.IsDone ?? false;
+
+            return Json(new { messages, isDone });
         }
+
 
     }
 }

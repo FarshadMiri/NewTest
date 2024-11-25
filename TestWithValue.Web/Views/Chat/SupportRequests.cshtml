@@ -4,6 +4,12 @@
 
 <h1>Support Requests</h1>
 
+<div>
+    <h3>All Tasks</h3>
+    <button onclick="loadAllTasks()">Load All Tasks</button>
+    <ul id="allTaskList"></ul>
+</div>
+
 <div id="taskContainer">
     <h3>Tasks:</h3>
     <!-- وظایف در اینجا نشان داده می‌شوند -->
@@ -11,9 +17,8 @@
 
 <div id="messageContainer">
     <h3>User Requests:</h3>
-    <!-- درخواست‌های کاربران در اینجا نشان داده می‌شوند -->
+    <!-- پیام‌ها در اینجا نمایش داده می‌شوند -->
 </div>
-
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.12/dist/browser/signalr.min.js"></script>
 
@@ -96,24 +101,124 @@
         }).catch(function (err) {
             console.error("Error while starting connection: " + err);
         });
+        function loadAllTasks() {
+            $.ajax({
+                url: '/Chat/GetAllTasks',
+                type: 'GET',
+                success: function (tasks) {
+                    const list = $('#allTaskList');
+                    list.empty();
+
+                    if (tasks.length > 0) {
+                        tasks.forEach(task => {
+                            const listItem = $(`
+                                <li>
+                                    <strong>${task.title}</strong> - ${task.taskDate}
+                                    [${task.isDone ? 'Done' : 'Pending'}]
+                                    <button class="showMessageButton" data-task-id="${task.taskId}">Show Message</button>
+                                </li>
+                            `);
+
+                            list.append(listItem);
+                        });
+
+                        // افزودن Event Listener به دکمه‌های "Show Message"
+                        $('.showMessageButton').on('click', function () {
+                            const taskId = $(this).data('task-id');
+                            loadTaskMessage(taskId);
+                        });
+                    } else {
+                        list.append('<li>No tasks found.</li>');
+                    }
+                },
+                error: function () {
+                    alert('Error loading tasks.');
+                }
+            });
+        }
+
+        function loadTaskMessage(taskId) {
+            $.ajax({
+                url: `/Chat/GetTaskMessage/${taskId}`,
+                type: 'GET',
+                success: function (messages) {
+                    const container = $('#messageContainer');
+                    container.empty();
+
+                    if (messages && messages.length > 0) {
+                        container.append(`<h4>Messages for Task ID: ${taskId}</h4>`);
+                        messages.forEach(msg => {
+                            const messageDiv = $(`
+                                <div class="message">
+                                    <p><strong>Sender:</strong> ${msg.senderId || 'Unknown'}</p>
+                                    <p class="message-text"><strong>Message:</strong> ${msg.message || 'No content'}</p>
+                                    <p><strong>Sent At:</strong> ${new Date(msg.sentAt).toLocaleString()}</p>
+                                    <button class="editButton">Edit</button>
+                                </div>
+                            `);
+                            container.append(messageDiv);
+
+                            // افزودن عملکرد ویرایش
+                            messageDiv.find('.editButton').on('click', function () {
+                                const messageText = messageDiv.find('.message-text').text();
+                                // ایجاد فضای ویرایش
+                                const editArea = $('<textarea class="edit-message-area"></textarea>').val(messageText);
+                                const saveButton = $('<button class="save-button">Save</button>');
+
+                                messageDiv.empty(); // پاک کردن محتوای قبلی
+                                messageDiv.append(editArea);
+                                messageDiv.append(saveButton);
+
+                                // افزودن عملکرد دکمه Save
+                                saveButton.on('click', function () {
+                                    const editedMessage = editArea.val();
+
+                                    // ارسال پیام ویرایش‌شده به SignalR
+                                    connection.invoke("EditUserRequest", taskId, editedMessage)
+                                        .then(function () {
+                                            // نمایش مجدد پیام ویرایش‌شده
+                                            messageDiv.empty();
+                                            messageDiv.append(`
+                                                <p><strong>Sender:</strong> ${msg.senderId || 'Unknown'}</p>
+                                                <p class="message-text"><strong>Message:</strong> ${editedMessage}</p>
+                                                <p><strong>Sent At:</strong> ${new Date(msg.sentAt).toLocaleString()}</p>
+                                            `);
+                                        })
+                                        .catch(function (err) {
+                                            console.error("Error while editing task: " + err);
+                                        });
+                                });
+                            });
+                        });
+                    } else {
+                        container.append('<p>No messages found for this task.</p>');
+                    }
+                },
+                error: function () {
+                    alert('Error loading messages for the task.');
+                }
+            });
+        }
     </script>
 
 }
 
 <style>
-    .task, .message {
+    .message {
         border: 1px solid #ccc;
         padding: 10px;
         margin: 10px 0;
         border-radius: 5px;
+        background-color: #f9f9f9;
     }
 
-        .task h4, .message h4 {
-            margin: 0;
+        .message p {
+            margin: 5px 0;
+            font-size: 14px;
         }
 
-        .task p, .message p {
-            margin: 5px 0;
+        .message strong {
+            color: #333;
         }
 
     .editButton {
@@ -122,4 +227,67 @@
         font-size: 12px;
         cursor: pointer;
     }
+
+    /* استایل کلی برای فضای ویرایش */
+    .edit-message-area {
+        width: 100%;
+        min-height: 100px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+        font-family: Arial, sans-serif;
+        box-sizing: border-box;
+        background-color: #f9f9f9;
+        resize: vertical;
+        margin-bottom: 10px;
+    }
+
+    /* دکمه ذخیره */
+    .save-button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+
+        .save-button:hover {
+            background-color: #45a049;
+        }
+
+    /* استایل دکمه ویرایش */
+    .editButton {
+        background-color: #f0ad4e;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+        .editButton:hover {
+            background-color: #e08732;
+        }
+
+    /* فضای پیام */
+    .message {
+        margin-bottom: 20px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #fff;
+    }
+
+    /* برای نمایش هر پیام */
+    .message-text {
+        margin: 10px 0;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
 </style>

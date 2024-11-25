@@ -25,6 +25,7 @@ namespace TestWithValue.Domain.Enitities
         public string UserId { get; set; }
         public IdentityUser User { get; set; } // ارجاع به IdentityUser
         public string TaskDateString { get; set; } // تاریخ به صورت رشته
+        public ICollection<Tbl_TaskMessage> Messages { get; set; } = new List<Tbl_TaskMessage>();
 
     }
 }

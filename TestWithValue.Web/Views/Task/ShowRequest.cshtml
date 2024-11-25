@@ -20,7 +20,7 @@
                 <td>@task.TaskDate.ToString("yyyy-MM-dd")</td>
                 <td>@(task.IsDone ? "پاسخ داده شده" : "در انتظار")</td>
                 <td>
-                    <button class="btn btn-info btn-sm" onclick="showTicketMessages(@task.TicketId)">
+                    <button class="btn btn-info btn-sm" onclick="showTicketMessages(@task.TaskId,@Html.Raw(task.IsDone.ToString().ToLower()))">
                         جزئیات
                     </button>
                 </td>
@@ -41,28 +41,44 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         // تابع برای نمایش پیام‌های تیکت
-        function showTicketMessages(ticketId) {
+        function showTicketMessages(taskId,isDone) {
             $.ajax({
-                url: '/task/getticketmessages',
+                url: '/task/gettaskmessages', // مسیر جدید در صورت نیاز
                 type: 'GET',
-                data: { ticketId: ticketId },
-                success: function (messages) {
+                data: { taskId: taskId }, // ارسال TaskId به جای TicketId
+                success: function (response) {
+                    console.log(response); // برای بررسی دقیق پاسخ
+
+                    // اطمینان از اینکه response.messages یک آرایه است
+                    const messages = response.messages || []; // اگر messages وجود نداشت، از یک آرایه خالی استفاده کن
+                    const isDone = response.isDone || false; // اگر isDone وجود نداشت، از false استفاده کن
+
                     $('#messageList').empty(); // پاک کردن لیست قبلی
 
-                    if (messages.length > 0) {
+                    if (Array.isArray(messages) && messages.length > 0) {
                         messages.forEach(message => {
                             $('#messageList').append(`
-                                        <div class="message-item">
-                                            <p><strong>فرستنده:</strong> ${message.senderId}</p>
-                                            <p>${message.message}</p>
-                                            <p><small>ارسال شده در: ${message.sentAt}</small></p>
-                                            ${message.FilePath ? `<a href="${message.FilePath}" target="_blank">دانلود فایل</a>` : ''}
-                                            <hr>
-                                        </div>
-                                    `);
+                                <div class="message-item">
+                                    <p><strong>فرستنده:</strong> ${message.senderId}</p>
+                                    <p>${message.message}</p>
+                                    <p><small>ارسال شده در: ${message.sentAt}</small></p>
+                                    ${message.filePath ? `<a href="${message.filePath}" target="_blank">دانلود فایل</a>` : ''}
+                                    <hr>
+                                </div>
+                            `);
                         });
                     } else {
-                        $('#messageList').html('<p>هیچ پیامی برای این تیکت وجود ندارد.</p>');
+                        $('#messageList').html('<p>هیچ پیامی برای این وظیفه وجود ندارد.</p>');
+                    }
+
+                    // اگر تسک پاسخ داده شده است، دکمه‌ها را نمایش دهیم
+                    if (isDone) {
+                        $('#messageList').append(`
+                            <div class="action-buttons">
+                                <button class="btn btn-success" onclick="confirmAndDownload(${taskId})">تأیید و دانلود</button>
+                                <button class="btn btn-warning" onclick="requestEdit(${taskId})">درخواست دوباره ویرایش</button>
+                            </div>
+                        `);
                     }
 
                     // نمایش Modal
@@ -73,7 +89,6 @@
                 }
             });
         }
-
         // بستن Modal
         function closeModal() {
             $('#messageModal').hide();

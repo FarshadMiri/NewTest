@@ -56,22 +56,38 @@ namespace TestWithValue.Web.Hubs.HubTask
             // بررسی اینکه آیا کاربر احراز هویت شده است یا خیر
             var currentUserId = Context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            // اگر کاربر احراز هویت نشده باشد، نمی‌توان وظیفه را ایجاد کرد
             if (string.IsNullOrEmpty(currentUserId))
             {
                 throw new HubException("کاربر احراز هویت نشده است.");
             }
 
-            
-            var taskDateOnly = DateOnly.FromDateTime(taskDate);
+            // بررسی وظیفه موجود با عنوان مشخص
+            var existingTask = await _taskService.GetOpenTaskForUserByTitleAsync(userId, title);
+
+            if (existingTask != null)
+            {
+                if (!existingTask.IsDone)
+                {
+                    // پیام به کاربر در صورت وجود درخواست در حال بررسی
+                    await Clients.Caller.SendAsync("ShowMessage", "شما یک درخواست در حال بررسی دارید.");
+                    return;
+                }
+                else
+                {
+                    // پیام به کاربر در صورت وجود درخواست قبلی کامل شده
+                    await Clients.Caller.SendAsync("ShowMessage", "شما یک درخواست مشابه دارید که قبلاً بررسی شده است.");
+                    return;
+                }
+            }
 
             // ایجاد نمونه‌ای از وظیفه با استفاده از اطلاعات دریافتی
+            var taskDateOnly = DateOnly.FromDateTime(taskDate);
             var task = new Tbl_Task
             {
                 TaskDate = taskDateOnly, // استفاده از DateOnly
                 Title = title,           // تنظیم عنوان وظیفه
                 IsDone = false,
-                UserId = userId      // تنظیم UserId کاربر ایجادکننده وظیفه
+                UserId = userId          // تنظیم UserId کاربر ایجادکننده وظیفه
             };
 
             // افزودن وظیفه به دیتابیس
@@ -82,9 +98,18 @@ namespace TestWithValue.Web.Hubs.HubTask
         }
         public async Task SendRequestToAgent(string userId, string title, string message)
         {
+            var existingTask = await _taskService.GetOpenTaskForUserByTitleAsync(userId, title);
+            var currentMessage = await _taskService.GetMessagesByTicketIdAsync(existingTask.TaskId);
+            
+            if (currentMessage.Count()==0)
+            {
+                int taskId = existingTask.TaskId;
+                await _taskService.SaveMessageAsync(taskId, userId, message);
+                // ارسال پیام به گروه پشتیبان‌ها
+                await Clients.Group("Agent").SendAsync("ReceiveRequestFromUser", userId, message, title);
 
-            // ارسال پیام به گروه پشتیبان‌ها
-            await Clients.Group("Agent").SendAsync("ReceiveRequestFromUser", userId, message, title);
+            }
+
         }
 
         public async Task EditUserRequest(int taskId,  string message)

@@ -128,12 +128,47 @@ namespace TestWithValue.Data.Repository
             }
         }
 
-        public  async Task<IEnumerable<Tbl_TaskMessage>> GetMessagesByTicketIdAsync(int taskId)
+        public async Task<IEnumerable<Tbl_TaskMessage>> GetMessagesByTicketIdAsync(int taskId)
         {
-            return await _context.tbl_TaskMessages
-         .Where(msg => msg.TaskId == taskId)
-         .OrderBy(msg => msg.SentAt)
-         .ToListAsync();
+            try
+            {
+                var messages = await _context.tbl_TaskMessages
+                    .Where(msg => msg.TaskId == taskId)
+                    .OrderBy(msg => msg.SentAt)
+                    .ToListAsync();
+
+                return messages; // بازگرداندن لیست پیام‌ها
+            }
+            catch (Exception ex)
+            {
+                // در صورت بروز خطا، می‌توانید این خطا را ثبت کنید
+                var inner = ex.InnerException?.Message ?? ex.Message;
+                // Log the error (اختیاری)
+                Console.WriteLine(inner);
+
+                // بازگرداندن لیست خالی به جای هیچ مقداری
+                return Enumerable.Empty<Tbl_TaskMessage>();
+            }
+        }
+
+        public async Task<Tbl_Task> GetOpenTicketForUserByTitleAsync(string userId, string title)
+        {
+            return await _context.tbl_Tasks
+               .Where(t => t.UserId == userId && t.Title == title) 
+               .FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<Tbl_Task>> GetAllTasksAsync()
+        {
+            try
+            {
+                return await _context.tbl_Tasks.ToListAsync(); // دریافت تمامی تسک‌ها
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                return Enumerable.Empty<Tbl_Task>(); // در صورت بروز خطا، مجموعه خالی بازگردانده می‌شود
+            }
         }
     }
 }

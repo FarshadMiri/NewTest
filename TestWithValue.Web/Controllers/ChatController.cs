@@ -106,5 +106,30 @@ namespace TestWithValue.Web.Controllers
             await _taskService.UpdateTaskStatusAsync(request.TaskId, request.IsDone);
             return Ok(new { message = "Task status updated successfully" });
         }
+        public async Task<IActionResult> GetAllTasks()
+        {
+            var tasks = await _taskService.GetAllTasksAsync();
+            return Json(tasks); // بازگرداندن داده‌ها به صورت JSON برای استفاده در فرانت‌اند
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetTaskMessage(int id)
+        {
+            // دریافت پیام‌های مرتبط با TaskId از سرویس
+            var messages = await _taskService.GetMessagesByTicketIdAsync(id);
+
+            if (messages != null && messages.Any())
+            {
+                var response = messages.Select(msg => new
+                {
+                    senderId = msg.SenderId, // فرستنده پیام
+                    message = msg.Message,  // متن پیام
+                    sentAt = msg.SentAt  // زمان ارسال پیام
+                });
+
+                return Json(response); // بازگرداندن پیام‌ها به صورت JSON
+            }
+
+            return NotFound(new { message = "No messages found for this task." });
+        }
     }
 }

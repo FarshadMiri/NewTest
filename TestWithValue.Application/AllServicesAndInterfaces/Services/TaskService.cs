@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AutoMapper;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,10 +15,12 @@ namespace TestWithValue.Application.AllServicesAndInterfaces.Services
     public class TaskService : ITaskService
     {
         private readonly ITaskRepository _taskRepository;
+        private readonly IMapper _mapper;   
 
-        public TaskService(ITaskRepository taskRepository)
+        public TaskService(ITaskRepository taskRepository,IMapper mapper)
         {
             _taskRepository = taskRepository;
+             _mapper = mapper;  
         }
 
         public async Task<IEnumerable<Tbl_Task>> GetTasksByDateAsync(DateOnly date)
@@ -114,6 +117,27 @@ namespace TestWithValue.Application.AllServicesAndInterfaces.Services
                 SenderId = msg.SenderId,
                 Message = msg.Message,
                 SentAt = msg.SentAt
+            });
+        }
+
+        public async Task<TaskViewModel> GetOpenTaskForUserByTitleAsync(string userId, string title)
+        {
+            var task = await _taskRepository.GetOpenTicketForUserByTitleAsync(userId, title);
+            var taskVM = _mapper.Map<TaskViewModel>(task);
+            return taskVM;
+        }
+
+        public async Task<IEnumerable<TaskViewModel>> GetAllTasksAsync()
+        {
+            var tasks = await _taskRepository.GetAllTasksAsync();
+
+            // تبدیل داده‌ها به ViewModel
+            return tasks.Select(task => new TaskViewModel
+            {
+                TaskId = task.TaskId,
+                Title = task.Title,
+                TaskDate = task.TaskDate,
+                IsDone = task.IsDone
             });
         }
     }
