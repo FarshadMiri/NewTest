@@ -266,6 +266,28 @@ namespace TestWithValue.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "tbl_Tasks",
+                columns: table => new
+                {
+                    TaskId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TaskDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    IsDone = table.Column<bool>(type: "bit", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    TaskDateString = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tbl_Tasks", x => x.TaskId);
+                    table.ForeignKey(
+                        name: "FK_tbl_Tasks_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "tbl_UserInfos",
                 columns: table => new
                 {
@@ -350,6 +372,28 @@ namespace TestWithValue.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "tbl_TaskMessages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TaskId = table.Column<int>(type: "int", nullable: false),
+                    SenderId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tbl_TaskMessages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_tbl_TaskMessages_tbl_Tasks_TaskId",
+                        column: x => x.TaskId,
+                        principalTable: "tbl_Tasks",
+                        principalColumn: "TaskId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "tbl_Tickets",
                 columns: table => new
                 {
@@ -359,11 +403,17 @@ namespace TestWithValue.Data.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TicketStatusId = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TaskId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_tbl_Tickets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_tbl_Tickets_tbl_Tasks_TaskId",
+                        column: x => x.TaskId,
+                        principalTable: "tbl_Tasks",
+                        principalColumn: "TaskId");
                     table.ForeignKey(
                         name: "FK_tbl_Tickets_tbl_TicketStatus_TicketStatusId",
                         column: x => x.TicketStatusId,
@@ -419,34 +469,6 @@ namespace TestWithValue.Data.Migrations
                         principalTable: "tbl_Topics",
                         principalColumn: "TopicId",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "tbl_Tasks",
-                columns: table => new
-                {
-                    TaskId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TaskDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    IsDone = table.Column<bool>(type: "bit", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    TaskDateString = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    TicketId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_tbl_Tasks", x => x.TaskId);
-                    table.ForeignKey(
-                        name: "FK_tbl_Tasks_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_tbl_Tasks_tbl_Tickets_TicketId",
-                        column: x => x.TicketId,
-                        principalTable: "tbl_Tickets",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -620,11 +642,9 @@ namespace TestWithValue.Data.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_tbl_Tasks_TicketId",
-                table: "tbl_Tasks",
-                column: "TicketId",
-                unique: true,
-                filter: "[TicketId] IS NOT NULL");
+                name: "IX_tbl_TaskMessages_TaskId",
+                table: "tbl_TaskMessages",
+                column: "TaskId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_tbl_Tasks_UserId",
@@ -635,6 +655,11 @@ namespace TestWithValue.Data.Migrations
                 name: "IX_tbl_TicketMessages_TicketId",
                 table: "tbl_TicketMessages",
                 column: "TicketId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tbl_Tickets_TaskId",
+                table: "tbl_Tickets",
+                column: "TaskId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_tbl_Tickets_TicketStatusId",
@@ -689,7 +714,7 @@ namespace TestWithValue.Data.Migrations
                 name: "tbl_Requests");
 
             migrationBuilder.DropTable(
-                name: "tbl_Tasks");
+                name: "tbl_TaskMessages");
 
             migrationBuilder.DropTable(
                 name: "tbl_TicketMessages");
@@ -716,16 +741,19 @@ namespace TestWithValue.Data.Migrations
                 name: "tbl_Tickets");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "tbl_Questions");
 
             migrationBuilder.DropTable(
-                name: "tbl_Questions");
+                name: "tbl_Tasks");
 
             migrationBuilder.DropTable(
                 name: "tbl_TicketStatus");
 
             migrationBuilder.DropTable(
                 name: "tbl_Tests");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
         }
     }
 }

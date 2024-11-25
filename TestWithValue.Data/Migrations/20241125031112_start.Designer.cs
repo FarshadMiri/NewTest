@@ -12,7 +12,7 @@ using TestWithValue.Data;
 namespace TestWithValue.Data.Migrations
 {
     [DbContext(typeof(TestWithValueDbContext))]
-    [Migration("20241124081729_start")]
+    [Migration("20241125031112_start")]
     partial class start
     {
         /// <inheritdoc />
@@ -452,9 +452,6 @@ namespace TestWithValue.Data.Migrations
                     b.Property<string>("TaskDateString")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("TicketId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -464,13 +461,36 @@ namespace TestWithValue.Data.Migrations
 
                     b.HasKey("TaskId");
 
-                    b.HasIndex("TicketId")
-                        .IsUnique()
-                        .HasFilter("[TicketId] IS NOT NULL");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("tbl_Tasks");
+                });
+
+            modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_TaskMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SenderId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TaskId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskId");
+
+                    b.ToTable("tbl_TaskMessages");
                 });
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Test", b =>
@@ -503,6 +523,9 @@ namespace TestWithValue.Data.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("TaskId")
+                        .HasColumnType("int");
+
                     b.Property<int>("TicketStatusId")
                         .HasColumnType("int");
 
@@ -513,6 +536,8 @@ namespace TestWithValue.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TaskId");
 
                     b.HasIndex("TicketStatusId");
 
@@ -824,26 +849,37 @@ namespace TestWithValue.Data.Migrations
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Task", b =>
                 {
-                    b.HasOne("TestWithValue.Domain.Enitities.Tbl_Ticket", "Ticket")
-                        .WithOne("Task")
-                        .HasForeignKey("TestWithValue.Domain.Enitities.Tbl_Task", "TicketId");
-
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
 
-                    b.Navigation("Ticket");
-
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_TaskMessage", b =>
+                {
+                    b.HasOne("TestWithValue.Domain.Enitities.Tbl_Task", "Task")
+                        .WithMany()
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Task");
                 });
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Ticket", b =>
                 {
+                    b.HasOne("TestWithValue.Domain.Enitities.Tbl_Task", "Task")
+                        .WithMany()
+                        .HasForeignKey("TaskId");
+
                     b.HasOne("TestWithValue.Domain.Enitities.Tbl_TicketStatus", "TicketStatus")
                         .WithMany()
                         .HasForeignKey("TicketStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Task");
 
                     b.Navigation("TicketStatus");
                 });
@@ -905,8 +941,6 @@ namespace TestWithValue.Data.Migrations
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Ticket", b =>
                 {
                     b.Navigation("Messages");
-
-                    b.Navigation("Task");
                 });
 #pragma warning restore 612, 618
         }

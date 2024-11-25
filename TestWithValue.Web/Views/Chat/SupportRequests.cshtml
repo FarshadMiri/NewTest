@@ -14,7 +14,7 @@
     <!-- درخواست‌های کاربران در اینجا نشان داده می‌شوند -->
 </div>
 
-@section Scripts{
+@section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.12/dist/browser/signalr.min.js"></script>
 
     <script>
@@ -23,29 +23,70 @@
             .withUrl("/taskhub") // URL هاب شما
             .build();
 
-        // دریافت وظایف جدید
+        // متغیر global برای ذخیره taskId
+        let currentTaskId = null;
+
         connection.on("ReceiveNewTask", function (task) {
             const container = document.getElementById('taskContainer');
             const taskDiv = document.createElement('div');
             taskDiv.className = 'task';
+
+            // ذخیره taskId در متغیر global
+            currentTaskId = task.taskId;
+
             taskDiv.innerHTML = `
-                    <h4>${task.title}</h4>
-                    <p>Date: ${task.taskDate}</p>
-                    <p>Status: <strong>${task.isDone ? "Done" : "Pending"}</strong></p>
-                `;
+                <h4>${task.title}</h4>
+                <p>Date: ${task.taskDate}</p>
+                <p>Status: <strong>${task.isDone ? "Done" : "Pending"}</strong></p>
+            `;
+
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Edit';
+            editButton.className = 'editButton';
+
+            editButton.addEventListener('click', function () {
+                const newMessage = prompt("Edit the message:", task.message);
+                if (newMessage) {
+                    // به‌روزرسانی پیام در رابط کاربری
+                    taskDiv.querySelector('.message-text').textContent = newMessage;
+
+                    // استفاده از taskId ذخیره‌شده در متغیر global
+                    connection.invoke("EditUserRequest", currentTaskId, newMessage)
+                        .catch(function (err) {
+                            console.error("Error while editing task: " + err);
+                        });
+                }
+            });
+
+            taskDiv.appendChild(editButton);
             container.appendChild(taskDiv);
         });
 
-        // دریافت درخواست‌های کاربران جدید
-        connection.on("ReceiveRequestFromUser", function (userId, message, title) {
+        connection.on("ReceiveRequestFromUser", function (userId, message, title, taskId) {
             const container = document.getElementById('messageContainer');
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message';
             messageDiv.innerHTML = `
-                    <h4>Ticket ID: ${ticketId} - ${title}</h4>
-                    <p>User ID: ${userId}</p>
-                    <p>Message: ${message}</p>
-                `;
+                <p>User ID: ${userId}</p>
+                <p class="message-text">${message}</p>
+                <button class="editButton">Edit</button>
+            `;
+
+            // افزودن قابلیت ویرایش پیام
+            const editButton = messageDiv.querySelector('.editButton');
+            editButton.addEventListener('click', function () {
+                const newMessage = prompt("Edit the message:", message);
+                if (newMessage) {
+                    // به‌روزرسانی پیام در رابط کاربری
+                    messageDiv.querySelector('.message-text').textContent = newMessage;
+
+                    // ارسال پیام ویرایش شده به سرور همراه با taskId
+                    connection.invoke("EditUserRequest", currentTaskId, newMessage).catch(function (err) {
+                        console.error("Error while editing message: " + err);
+                    });
+                }
+            });
+
             container.appendChild(messageDiv);
         });
 
@@ -58,6 +99,7 @@
     </script>
 
 }
+
 <style>
     .task, .message {
         border: 1px solid #ccc;
@@ -66,13 +108,18 @@
         border-radius: 5px;
     }
 
-    .task h4, .message h4 {
-        margin: 0;
-    }
+        .task h4, .message h4 {
+            margin: 0;
+        }
 
-    .task p, .message p {
-        margin: 5px 0;
+        .task p, .message p {
+            margin: 5px 0;
+        }
+
+    .editButton {
+        margin-top: 5px;
+        padding: 5px 10px;
+        font-size: 12px;
+        cursor: pointer;
     }
 </style>
-
-

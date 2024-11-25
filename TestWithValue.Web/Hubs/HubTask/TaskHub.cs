@@ -87,6 +87,22 @@ namespace TestWithValue.Web.Hubs.HubTask
             await Clients.Group("Agent").SendAsync("ReceiveRequestFromUser", userId, message, title);
         }
 
+        public async Task EditUserRequest(int taskId,  string message)
+        {
+            try
+            {
+                // به‌روزرسانی پیام در پایگاه داده
+                await _taskService.UpdateMessageAsync(Convert.ToInt32(taskId), message);
+
+                // ارسال پیام به کلاینت
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in SendEditToUser: {ex.Message}");
+            }
+        }
+
+
 
         public async Task GetUserTasks()
         {
