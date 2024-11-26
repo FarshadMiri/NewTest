@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DinkToPdf;
+using DinkToPdf.Contracts;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TestWithValue.Application.AllServicesAndInterfaces.Services;
 using TestWithValue.Application.AllServicesAndInterfaces.Services_Interface;
@@ -9,10 +11,14 @@ namespace TestWithValue.Web.Controllers
     {
         private readonly ITaskService _taskService;
         private readonly ITicketService _ticketService;
-        public TaskController(ITaskService taskService, ITicketService ticketService)
+        private readonly IConverter _converter;
+        private readonly ILogger<TaskController> _logger;
+        public TaskController(ITaskService taskService, ITicketService ticketService, IConverter converter, ILogger<TaskController> logger)
         {
             _taskService = taskService;
             _ticketService = ticketService;
+            _converter = converter;
+            _logger = logger;   
         }
         public IActionResult Index()
         {
@@ -52,6 +58,89 @@ namespace TestWithValue.Web.Controllers
             return Json(new { messages, isDone });
         }
 
+        [HttpPost("task/downloadpdf")]
+        public async Task<IActionResult> DownloadPdf(int taskId)
+        {
+            try
+            {
+                // دریافت پیام‌های مربوط به taskId
+                var messages = await _taskService.GetMessagesByTicketIdAsync(taskId);
+                if (messages == null || !messages.Any())
+                {
+                    return BadRequest("هیچ پیامی برای این تسک وجود ندارد.");
+                }
+
+                // محتوای HTML برای تولید PDF
+                var htmlContent = @"
+        <!DOCTYPE html>
+        <html lang='fa' dir='rtl'>
+        <head>
+            <meta charset='UTF-8'>
+            <style>
+                body {
+                    font-family: 'Tahoma', sans-serif;
+                    direction: rtl;
+                    text-align: right;
+                }
+                .message {
+                    margin-bottom: 20px;
+                    border: 1px solid #ddd;
+                    padding: 10px;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>پیام‌های تسک</h1>";
+
+                foreach (var message in messages)
+                {
+                    htmlContent += $@"
+            <div class='message'>
+                <strong>فرستنده:</strong> {message.SenderId}<br />
+                <strong>پیام:</strong> {message.Message}<br />
+                <strong>تاریخ ارسال:</strong> {message.SentAt:yyyy-MM-dd HH:mm}
+            </div>";
+                }
+
+                htmlContent += @"
+        </body>
+        </html>";
+
+                // تنظیمات تولید PDF
+                var pdfDoc = new HtmlToPdfDocument
+                {
+                    GlobalSettings = new GlobalSettings
+                    {
+                        ColorMode = ColorMode.Color,
+                        Orientation = Orientation.Portrait,
+                        PaperSize = PaperKind.A4,
+                        Margins = new MarginSettings { Top = 10, Bottom = 10 }
+                    }
+                };
+
+                pdfDoc.Objects.Add(new ObjectSettings
+                {
+                    PagesCount = true,
+                    HtmlContent = htmlContent,
+                    WebSettings = new WebSettings
+                    {
+                        DefaultEncoding = "utf-8"
+                    }
+                });
+
+                // تولید PDF
+                var pdf = _converter.Convert(pdfDoc); // ممکن است خطا اینجا باشد
+
+                // بازگشت فایل PDF برای دانلود
+                return File(pdf, "application/pdf", "task_messages.pdf");
+            }
+            catch (Exception ex)
+            {
+                // لاگ کردن خطا
+                _logger.LogError(ex, "خطایی در تولید PDF رخ داده است.");
+                return StatusCode(500, "خطایی در تولید PDF رخ داده است.");
+            }
+        }
 
     }
 }

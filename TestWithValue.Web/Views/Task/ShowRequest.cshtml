@@ -93,5 +93,33 @@
         function closeModal() {
             $('#messageModal').hide();
         }
+        function confirmAndDownload(taskId) {
+            const apiUrl = `/task/downloadpdf?taskId=${taskId}`;
+
+            fetch(apiUrl, {
+                method: 'POST'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`خطا در تولید فایل PDF: ${response.statusText}`);
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'task_messages.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('خطایی در تولید و دانلود فایل رخ داده است.');
+                });
+        }
+
     </script>
 }
