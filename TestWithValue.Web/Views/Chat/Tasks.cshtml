@@ -47,13 +47,14 @@
                                 tasks.forEach(task => {
                                     console.log("TaskId:", task.taskId);  // نمایش taskId در کنسول
                                     $('#taskList').append(`
-                <div class="task-item">
-                    <span>${task.title}</span>
-                    <span>${task.isDone ? "انجام شده" : "در انتظار"}</span>
-                    <input type="checkbox" ${task.isDone ? 'checked' : ''}
-                           onchange="updateTaskStatus(${task.taskId}, this.checked)">
-                </div>
-            `);
+                                        <div class="task-item">
+                                            <span>${task.title}</span>
+                                            <span>${task.isDone ? "انجام شده" : "در انتظار"}</span>
+                                            <input type="checkbox" ${task.isDone ? 'checked' : ''} onchange="updateTaskStatus(${task.taskId}, this.checked)">
+                                            <!-- دکمه بررسی وظیفه -->
+                                            <button onclick="viewTaskMessages(${task.taskId})">بررسی وظیفه</button>
+                                        </div>
+                                    `);
                                 });
 
                             } else {
@@ -87,5 +88,18 @@
                 }
             });
         }
+
+        // تابع برای نمایش پیام‌های مربوط به هر وظیفه
+        function viewTaskMessages(taskId) {
+            console.log("TaskId in viewTaskMessages:", taskId); // چاپ taskId برای بررسی
+            if (taskId && taskId !== 0) {
+                const url = `/Task/ViewTaskMessages/${taskId}`;
+                console.log("Redirecting to URL:", url); // چاپ URL
+                window.location.href = url;
+            } else {
+                alert("Task ID is invalid");
+            }
+        }
+
     </script>
 }

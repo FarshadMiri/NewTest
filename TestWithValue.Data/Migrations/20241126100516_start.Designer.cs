@@ -12,7 +12,7 @@ using TestWithValue.Data;
 namespace TestWithValue.Data.Migrations
 {
     [DbContext(typeof(TestWithValueDbContext))]
-    [Migration("20241125134825_start")]
+    [Migration("20241126100516_start")]
     partial class start
     {
         /// <inheritdoc />

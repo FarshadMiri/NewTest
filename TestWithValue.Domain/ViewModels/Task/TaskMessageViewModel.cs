@@ -8,6 +8,7 @@ namespace TestWithValue.Domain.ViewModels.Task
 {
     public class TaskMessageViewModel
     {
+        public int TaskId { get; set; }
         public string SenderId { get; set; } // شناسه ارسال کننده
         public string Message { get; set; } // متن پیام
         public DateTime SentAt { get; set; } // زمان ارسال

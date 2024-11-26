@@ -1,0 +1,77 @@
+﻿@using TestWithValue.Domain.ViewModels.Task
+@model IEnumerable<TaskMessageViewModel>
+
+@{
+    ViewData["Title"] = "Task Messages";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Sender</th>
+                <th>Message</th>
+                <th>Sent At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var message in Model)
+            {
+                <tr id="row-@message.TaskId">
+                    <td>@message.SenderId</td>
+                    <td>
+                        <textarea class="form-control" id="message-@message.TaskId">@message.Message</textarea>
+                    </td>
+                    <td>@message.SentAt</td>
+                    <td>
+                        <button class="btn btn-success" onclick="saveChanges(@message.TaskId)">Save Changes</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No messages available for this task.</p>
+}
+
+<script>
+    // AJAX برای ارسال تغییرات
+    function saveChanges(taskId) {
+        const message = document.getElementById(`message-${taskId}`).value;
+
+        if (!message) {
+            alert("Message cannot be empty.");
+            return;
+        }
+
+        // ارسال اطلاعات به کنترلر
+        fetch('/Task/EditUserRequest', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                taskId: taskId,
+                messages: message,
+            }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === "Changes saved successfully.") {
+                    alert("Changes saved!");
+                } else {
+                    alert("Error saving changes.");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred.");
+            });
+    }
+</script>

@@ -115,6 +115,7 @@
                                 <li>
                                     <strong>${task.title}</strong> - ${task.taskDate}
                                     [${task.isDone ? 'Done' : 'Pending'}]
+                                    <span> (Task ID: ${task.taskId}) </span> <!-- نمایش taskId -->
                                     <button class="showMessageButton" data-task-id="${task.taskId}">Show Message</button>
                                 </li>
                             `);
@@ -136,6 +137,7 @@
                 }
             });
         }
+
 
         function loadTaskMessage(taskId) {
             $.ajax({

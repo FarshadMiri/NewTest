@@ -1,9 +1,11 @@
 ﻿using DinkToPdf;
 using DinkToPdf.Contracts;
+using iText.Commons.Actions.Contexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TestWithValue.Application.AllServicesAndInterfaces.Services;
 using TestWithValue.Application.AllServicesAndInterfaces.Services_Interface;
+using TestWithValue.Domain.ViewModels.Task;
 
 namespace TestWithValue.Web.Controllers
 {
@@ -57,6 +59,55 @@ namespace TestWithValue.Web.Controllers
 
             return Json(new { messages, isDone });
         }
+        // اکشن برای نمایش پیام‌های تسک خاص
+        [Route("Task/ViewTaskMessages/{taskId}")]
+        public async Task<IActionResult> ViewTaskMessages(int taskId)
+        {
+            if (taskId <= 0)  // بررسی برای taskId نامعتبر
+            {
+                return NotFound();
+            }
+
+            var taskMessages = await _taskService.GetMessagesByTicketIdAsync(taskId);
+
+            if (taskMessages == null || !taskMessages.Any())
+            {
+                return NotFound();
+            }
+
+            var viewModel = taskMessages.Select(msg => new TaskMessageViewModel
+            {
+                SenderId = msg.SenderId,
+                Message = msg.Message,
+                SentAt = msg.SentAt,
+                TaskId = taskId  // اضافه کردن TaskId به ViewModel
+            }).ToList();
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditUserRequest([FromBody] EditRequestViewModel model)
+        {
+            try
+            {
+                if (model == null || string.IsNullOrEmpty(model.Messages))
+                {
+                    return Json(new { message = "Invalid input." });
+                }
+
+                // به‌روزرسانی پیام در سرویس
+                await _taskService.UpdateMessageAsync(model.TaskId, model.Messages);
+
+                return Json(new { message = "Changes saved successfully." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in EditUserRequest: {ex.Message}");
+                return Json(new { message = "Error saving changes." });
+            }
+        }
+
 
         [HttpPost("task/downloadpdf")]
         public async Task<IActionResult> DownloadPdf(int taskId)

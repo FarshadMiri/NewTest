@@ -6,6 +6,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.SignalR;
 using TestWithValue.Domain.Enitities;
 using TestWithValue.Web.Hubs.HubSupport;
+using TestWithValue.Domain.ViewModels.Task;
 namespace TestWithValue.Web.Controllers
 {
     [Authorize]
@@ -109,7 +110,14 @@ namespace TestWithValue.Web.Controllers
         public async Task<IActionResult> GetAllTasks()
         {
             var tasks = await _taskService.GetAllTasksAsync();
-            return Json(tasks); // بازگرداندن داده‌ها به صورت JSON برای استفاده در فرانت‌اند
+            var taskViewModels = tasks.Select(t => new TaskViewModel
+            {
+                TaskId = t.TaskId,
+                Title = t.Title,
+                IsDone = t.IsDone,
+                TaskDate = t.TaskDate
+            });
+            return Json(taskViewModels); // بازگرداندن داده‌ها به صورت JSON برای استفاده در فرانت‌اند
         }
         [HttpGet]
         public async Task<IActionResult> GetTaskMessage(int id)
