@@ -1,0 +1,61 @@
+﻿@{
+    ViewData["Title"] = "افزودن وظیفه";
+}
+
+<h2>افزودن وظیفه</h2>
+
+<!-- لینک به فایل‌های استایل persian-datepicker -->
+<link rel="stylesheet" href="https://babakhani.github.io/PersianWebToolkit/beta/lib/persian-datepicker/dist/css/persian-datepicker.css" />
+
+<div id="datepicker"></div>
+
+<!-- فرم افزودن تسک -->
+<div>
+    <label for="taskTitle">عنوان وظیفه:</label>
+    <input type="text" id="taskTitle" placeholder="عنوان تسک را وارد کنید..." />
+
+    <button id="addTaskButton">اضافه کردن وظیفه</button>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script src="https://babakhani.github.io/PersianWebToolkit/beta/lib/persian-date/dist/persian-date.js"></script>
+    <script src="https://babakhani.github.io/PersianWebToolkit/beta/lib/persian-datepicker/dist/js/persian-datepicker.js"></script>
+
+    <script>
+        let selectedDate = null;
+
+        // تنظیم تقویم فارسی
+        $('#datepicker').persianDatepicker({
+            inline: true,
+            format: 'YYYY/MM/DD',
+            onSelect: function (unixDate) {
+                selectedDate = new Date(unixDate).toISOString().split('T')[0]; // تاریخ انتخاب‌شده
+            }
+        });
+
+        // افزودن وظیفه
+        $('#addTaskButton').on('click', function () {
+            const title = $('#taskTitle').val();
+            if (!selectedDate || !title) {
+                alert('لطفاً تاریخ و عنوان وظیفه را مشخص کنید.');
+                return;
+            }
+
+            // ارسال درخواست افزودن تسک به سرور
+            $.ajax({
+                url: '@Url.Action("AddTask", "Task")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ TaskDate: selectedDate, Title: title }),
+                success: function (response) {
+                    alert('وظیفه با موفقیت اضافه شد.');
+                    $('#taskTitle').val(''); // پاک کردن فیلد عنوان
+                },
+                error: function () {
+                    alert('خطایی در افزودن وظیفه رخ داد.');
+                }
+            });
+        });
+    </script>
+}

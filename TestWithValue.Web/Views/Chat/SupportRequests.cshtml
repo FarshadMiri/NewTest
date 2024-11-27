@@ -111,29 +111,30 @@
 
                     if (tasks.length > 0) {
                         tasks.forEach(task => {
+                            const statusText = task.isDone ? 'پاسخ داده شده است' : 'پاسخ داده نشده است';
                             const listItem = $(`
                                 <li>
                                     <strong>${task.title}</strong> - ${task.taskDate}
-                                    [${task.isDone ? 'Done' : 'Pending'}]
-                                    <span> (Task ID: ${task.taskId}) </span> <!-- نمایش taskId -->
-                                    <button class="showMessageButton" data-task-id="${task.taskId}">Show Message</button>
+                                    [${statusText}]
+                                    <span> (Task ID: ${task.taskId}) </span>
+                                    <button class="showMessageButton" data-task-id="${task.taskId}">نمایش پیام‌ها</button>
                                 </li>
                             `);
 
                             list.append(listItem);
                         });
 
-                        // افزودن Event Listener به دکمه‌های "Show Message"
+                        // افزودن Event Listener به دکمه‌های "نمایش پیام‌ها"
                         $('.showMessageButton').on('click', function () {
                             const taskId = $(this).data('task-id');
                             loadTaskMessage(taskId);
                         });
                     } else {
-                        list.append('<li>No tasks found.</li>');
+                        list.append('<li>هیچ تسکی یافت نشد.</li>');
                     }
                 },
                 error: function () {
-                    alert('Error loading tasks.');
+                    alert('خطا در بارگذاری تسک‌ها.');
                 }
             });
         }

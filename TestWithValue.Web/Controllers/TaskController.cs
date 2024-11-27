@@ -3,8 +3,14 @@ using DinkToPdf.Contracts;
 using iText.Commons.Actions.Contexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PdfSharpCore.Drawing;
+using PdfSharpCore.Fonts;
+using PdfSharpCore.Pdf;
+using System.Security.Claims;
+using System.Text.RegularExpressions;
 using TestWithValue.Application.AllServicesAndInterfaces.Services;
 using TestWithValue.Application.AllServicesAndInterfaces.Services_Interface;
+using TestWithValue.Domain.Enitities;
 using TestWithValue.Domain.ViewModels.Task;
 
 namespace TestWithValue.Web.Controllers
@@ -20,7 +26,7 @@ namespace TestWithValue.Web.Controllers
             _taskService = taskService;
             _ticketService = ticketService;
             _converter = converter;
-            _logger = logger;   
+            _logger = logger;
         }
         public IActionResult Index()
         {
@@ -109,89 +115,127 @@ namespace TestWithValue.Web.Controllers
         }
 
 
-        [HttpPost("task/downloadpdf")]
-        public async Task<IActionResult> DownloadPdf(int taskId)
+        [HttpPost("task/ConvertMessageToPdf")]
+        public string ConvertMessageToPdf(string message, string userId, string ticketId)
         {
+            string pdfPath = null;
             try
             {
-                // دریافت پیام‌های مربوط به taskId
-                var messages = await _taskService.GetMessagesByTicketIdAsync(taskId);
-                if (messages == null || !messages.Any())
+                string rootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Editpdf");
+
+                if (!Directory.Exists(rootPath))
                 {
-                    return BadRequest("هیچ پیامی برای این تسک وجود ندارد.");
+                    Directory.CreateDirectory(rootPath);
                 }
 
-                // محتوای HTML برای تولید PDF
-                var htmlContent = @"
-        <!DOCTYPE html>
-        <html lang='fa' dir='rtl'>
-        <head>
-            <meta charset='UTF-8'>
-            <style>
-                body {
-                    font-family: 'Tahoma', sans-serif;
-                    direction: rtl;
-                    text-align: right;
-                }
-                .message {
-                    margin-bottom: 20px;
-                    border: 1px solid #ddd;
-                    padding: 10px;
-                }
-            </style>
-        </head>
-        <body>
-            <h1>پیام‌های تسک</h1>";
+                string pdfFileName = $"message_{userId}_{ticketId}.pdf";
+                pdfPath = Path.Combine(rootPath, pdfFileName);
 
-                foreach (var message in messages)
+                using (var document = new PdfDocument())
                 {
-                    htmlContent += $@"
-            <div class='message'>
-                <strong>فرستنده:</strong> {message.SenderId}<br />
-                <strong>پیام:</strong> {message.Message}<br />
-                <strong>تاریخ ارسال:</strong> {message.SentAt:yyyy-MM-dd HH:mm}
-            </div>";
-                }
+                    var page = document.AddPage();
+                    //page.Size = PageSize.A4;
 
-                htmlContent += @"
-        </body>
-        </html>";
-
-                // تنظیمات تولید PDF
-                var pdfDoc = new HtmlToPdfDocument
-                {
-                    GlobalSettings = new GlobalSettings
+                    using (var gfx = XGraphics.FromPdfPage(page))
                     {
-                        ColorMode = ColorMode.Color,
-                        Orientation = Orientation.Portrait,
-                        PaperSize = PaperKind.A4,
-                        Margins = new MarginSettings { Top = 10, Bottom = 10 }
+                        string fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Fonts", "B-NAZANIN.TTF");
+                        var fontResolver = GlobalFontSettings.FontResolver; // تنظیمات فونت برای PdfSharpCore
+                        XFont font = new XFont("B Nazanin", 12, XFontStyle.Regular);
+
+                        double margin = 20;
+                        double y = margin;
+
+                        // پردازش متن فارسی: معکوس کردن ترتیب کلمات برای نمایش درست در PdfSharp
+                        string processedMessage = ReverseTextForPdfSharp(message);
+
+                        // تقسیم متن به خطوط با عرض محدود
+                        var lines = WrapTextToFit(gfx, processedMessage, font, page.Width - 2 * margin);
+                        foreach (var line in lines)
+                        {
+                            gfx.DrawString(line, font, XBrushes.Black, new XPoint(page.Width - margin, y), XStringFormats.TopRight);
+                            y += font.GetHeight();
+                        }
+
+                        document.Save(pdfPath);
                     }
-                };
+                }
 
-                pdfDoc.Objects.Add(new ObjectSettings
-                {
-                    PagesCount = true,
-                    HtmlContent = htmlContent,
-                    WebSettings = new WebSettings
-                    {
-                        DefaultEncoding = "utf-8"
-                    }
-                });
-
-                // تولید PDF
-                var pdf = _converter.Convert(pdfDoc); // ممکن است خطا اینجا باشد
-
-                // بازگشت فایل PDF برای دانلود
-                return File(pdf, "application/pdf", "task_messages.pdf");
+                return $"/Editpdf/{pdfFileName}";
             }
             catch (Exception ex)
             {
-                // لاگ کردن خطا
-                _logger.LogError(ex, "خطایی در تولید PDF رخ داده است.");
-                return StatusCode(500, "خطایی در تولید PDF رخ داده است.");
+                Console.WriteLine($"Error creating PDF: {ex.Message}");
+                return null;
             }
         }
+
+        private string ReverseTextForPdfSharp(string input)
+        {
+            // معکوس کردن کلمات و ترتیب جمله‌ها
+            var words = input.Split(' ');
+            Array.Reverse(words);
+            return string.Join(" ", words);
+        }
+        // تابع برای تقسیم متن به خطوط با توجه به عرض صفحه
+        private List<string> WrapTextToFit(XGraphics gfx, string text, XFont font, double maxWidth)
+        {
+            var lines = new List<string>();
+            var words = Regex.Split(text, @"\s+"); // تقسیم متن به کلمات
+            var currentLine = "";
+
+            foreach (var word in words)
+            {
+                var testLine = currentLine + (currentLine.Length > 0 ? " " : "") + word;
+                var size = gfx.MeasureString(testLine, font);
+                if (size.Width > maxWidth) // اگر خط بیشتر از حداکثر عرض باشد
+                {
+                    lines.Add(currentLine); // خط فعلی را اضافه کنید
+                    currentLine = word; // خط جدید با کلمه جدید شروع کنید
+                }
+                else
+                {
+                    currentLine = testLine; // ادامه‌ی خط
+                }
+            }
+
+            if (currentLine.Length > 0) // افزودن آخرین خط
+            {
+                lines.Add(currentLine);
+            }
+
+            return lines;
+        }        // تابع برای معکوس کردن متن
+
+        public IActionResult SupportTask()
+        {
+
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> AddTask([FromBody] AddTaskDto model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Title) || model.TaskDate == null)
+                return BadRequest("عنوان و تاریخ وظیفه باید مشخص شوند.");
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // دریافت UserId کاربر
+
+            // تبدیل تاریخ از رشته به DateOnly
+            if (!DateOnly.TryParse(model.TaskDate, out var taskDate))
+                return BadRequest("تاریخ وارد شده معتبر نیست.");
+
+            var task = new Tbl_Task
+            {
+                TaskDate = taskDate,
+                Title = model.Title,
+                IsDone = false,
+                UserId = userId // کاربر ایجادکننده
+            };
+
+            await _taskService.AddTaskAsync(task);
+
+            return Ok(new { Message = "وظیفه با موفقیت اضافه شد." });
+        }
+
 
     }
 }
