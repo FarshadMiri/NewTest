@@ -101,47 +101,87 @@
         }).catch(function (err) {
             console.error("Error while starting connection: " + err);
         });
-        function loadAllTasks() {
-            $.ajax({
-                url: '/Chat/GetAllTasks',
-                type: 'GET',
-                success: function (tasks) {
-                    const list = $('#allTaskList');
-                    list.empty();
+          function loadAllTasks() {
+           $.ajax({
+            url: '/Chat/GetAllTasks',
+             type: 'GET',
+               success: function (tasks) {
+              const list = $('#allTaskList');
+                list.empty();
 
-                    if (tasks.length > 0) {
-                        tasks.forEach(task => {
-                            const statusText = task.isDone ? 'پاسخ داده شده است' : 'پاسخ داده نشده است';
-                            const listItem = $(`
-                                <li>
-                                    <strong>${task.title}</strong> - ${task.taskDate}
-                                    [${statusText}]
-                                    <span> (Task ID: ${task.taskId}) </span>
-                                    <button class="showMessageButton" data-task-id="${task.taskId}">نمایش پیام‌ها</button>
-                                </li>
-                            `);
+               if (tasks.length > 0) {
+                tasks.forEach(task => {
+                    // تبدیل TaskDate به فرمت مناسب (Date)
+                    const taskDate = new Date(task.taskDate.year, task.taskDate.month - 1, task.taskDate.day).toLocaleDateString();
 
-                            list.append(listItem);
-                        });
+                    // تبدیل TimeOnly به فرمت زمان قابل‌خواندن
+                    const startTime = task.taskStartTime ? formatTime(task.taskStartTime) : 'N/A';
+                    const endTime = task.taskEndTime ? formatTime(task.taskEndTime) : 'N/A';
 
-                        // افزودن Event Listener به دکمه‌های "نمایش پیام‌ها"
-                        $('.showMessageButton').on('click', function () {
-                            const taskId = $(this).data('task-id');
-                            loadTaskMessage(taskId);
-                        });
-                    } else {
-                        list.append('<li>هیچ تسکی یافت نشد.</li>');
-                    }
-                },
-                error: function () {
-                    alert('خطا در بارگذاری تسک‌ها.');
-                }
+                    const statusText = task.isDone ? 'پاسخ داده شده است' : 'پاسخ داده نشده است';
+
+                    const listItem = $(`
+                        <li>
+                            <strong>${task.title}</strong> - ${taskDate}
+                            [${statusText}]
+                            <span> (Task ID: ${task.taskId}) </span>
+                            <span> | Start Time: ${startTime}</span>
+                            <span> | End Time: ${endTime}</span>
+                            <button class="showMessageButton" data-task-id="${task.taskId}">نمایش پیام‌ها</button>
+                            <label>
+                                <input type="checkbox" class="taskCheckbox" data-task-id="${task.taskId}" ${task.isDone ? 'checked' : ''} />
+                                <span>Task Completed</span>
+                            </label>
+                            <a href="/Task/ViewTaskMessages/${task.taskId}">
+                                <button class="viewTaskMessagesButton" style="background-color: #007bff; color: white; padding: 5px 10px; margin-left: 10px;">
+                                    بررسی وظیفه
+                                </button>
+                            </a>
+                        </li>
+                    `);
+
+                    list.append(listItem);
+
+                    // افزودن Event Listener به دکمه‌های "نمایش پیام‌ها"
+                    $('.showMessageButton').on('click', function () {
+                        const taskId = $(this).data('task-id');
+                        loadTaskMessage(taskId);
+                    });
+
+                    // افزودن Event Listener به چک‌باکس
+                    $('.taskCheckbox').on('change', function () {
+                        const taskId = $(this).data('task-id');
+                        const isChecked = $(this).prop('checked');
+
+                        // ارسال وضعیت جدید به سرور برای بروزرسانی isDone
+                        updateTaskStatus(taskId, isChecked);
+                    });
+                });
+            } else {
+                list.append('<li>هیچ تسکی یافت نشد.</li>');
+            }
+        },
+        error: function () {
+            alert('خطا در بارگذاری تسک‌ها.');
+          }
             });
-        }
+           }
+
+// تابع کمکی برای فرمت کردن زمان
+          function formatTime(time) {
+    // فرض بر این است که زمان از نوع "HH:mm" یا مشابه است
+            const [hours, minutes] = time.split(':');
+          const date = new Date();
+           date.setHours(hours);
+         date.setMinutes(minutes);
+          return date.toLocaleTimeString();
+           }
 
 
-        function loadTaskMessage(taskId) {
-            $.ajax({
+
+
+               function loadTaskMessage(taskId) {
+                $.ajax({
                 url: `/Chat/GetTaskMessage/${taskId}`,
                 type: 'GET',
                 success: function (messages) {
@@ -199,6 +239,24 @@
                 },
                 error: function () {
                     alert('Error loading messages for the task.');
+                }
+            });
+        }
+        function updateTaskStatus(taskId, isDone) {
+            console.log("TaskId inside updateTaskStatus: ", taskId);  // بررسی taskId در این تابع
+
+            $.ajax({
+                url: '@Url.Action("UpdateTaskStatus", "Tasks")', // مسیر به‌روز شده برای متد UpdateTaskStatus
+                type: 'POST',
+                contentType: 'application/json',
+                dataType: 'json',  // اضافه کردن dataType
+                data: JSON.stringify({ taskId: taskId, isDone: isDone }), // ارسال داده‌ها به صورت JSON
+                success: function (response) {
+                    console.log(response.message);  // پیغام موفقیت
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);  // نمایش خطا
+                    alert("خطایی رخ داده است.");
                 }
             });
         }

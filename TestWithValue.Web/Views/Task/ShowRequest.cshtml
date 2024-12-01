@@ -103,32 +103,36 @@
             $('#messageModal').hide();
         }
         function confirmAndDownload(taskId) {
+            // ارسال درخواست به سرور برای دانلود پی‌دی‌اف
             const apiUrl = `/task/downloadpdf?taskId=${taskId}`;
 
-            fetch(apiUrl, {
-                method: 'POST'
-            })
+            // درخواست برای دانلود پی‌دی‌اف
+            fetch(apiUrl)
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error(`خطا در تولید فایل PDF: ${response.statusText}`);
+                        throw new Error('خطا در تولید پی‌دی‌اف');
                     }
-                    return response.blob();
+                    return response.blob(); // دریافت فایل پی‌دی‌اف به صورت blob
                 })
                 .then(blob => {
+                    // تبدیل blob به URL
                     const url = window.URL.createObjectURL(blob);
+
+                    // ساخت یک لینک موقت برای دانلود
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'task_messages.pdf';
+                    a.download = `task_${taskId}_messages.pdf`;  // نام فایل پی‌دی‌اف
                     document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    window.URL.revokeObjectURL(url);
+                    a.click();  // شبیه‌سازی کلیک برای دانلود
+                    a.remove();  // حذف لینک بعد از دانلود
+                    window.URL.revokeObjectURL(url);  // آزاد کردن URL
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    alert('خطایی در تولید و دانلود فایل رخ داده است.');
+                    console.error('Error downloading the PDF:', error);
+                    alert('خطایی رخ داده است. لطفاً دوباره تلاش کنید.');
                 });
         }
+
 
     </script>
 }

@@ -89,10 +89,12 @@ namespace TestWithValue.Web.Controllers
 
             var result = tasks.Select(t => new
             {
-                taskId = t.TaskId, // اضافه کردن taskId
+                taskId = t.TaskId,
                 title = t.Title,
                 isDone = t.IsDone,
-                date = t.TaskDate.ToString("yyyy-MM-dd")
+                date = t.TaskDate.ToString("yyyy-MM-dd"),
+                startTime = t.TaskStartTime.HasValue ? t.TaskStartTime.Value.ToString("HH:mm") : null, // ساعت شروع
+                endTime = t.TaskEndTime.HasValue ? t.TaskEndTime.Value.ToString("HH:mm") : null // ساعت پایان
             });
 
             return Json(result);
@@ -115,8 +117,11 @@ namespace TestWithValue.Web.Controllers
                 TaskId = t.TaskId,
                 Title = t.Title,
                 IsDone = t.IsDone,
-                TaskDate = t.TaskDate
+                TaskDate = t.TaskDate,
+                TaskStartTime = t.TaskStartTime, // اضافه کردن ساعت شروع
+                TaskEndTime = t.TaskEndTime // اضافه کردن ساعت پایان
             });
+
             return Json(taskViewModels); // بازگرداندن داده‌ها به صورت JSON برای استفاده در فرانت‌اند
         }
         [HttpGet]

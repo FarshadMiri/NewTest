@@ -1,17 +1,19 @@
-﻿using DinkToPdf;
-using DinkToPdf.Contracts;
-using iText.Commons.Actions.Contexts;
+﻿using iText.Commons.Actions.Contexts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PdfSharpCore.Drawing;
-using PdfSharpCore.Fonts;
-using PdfSharpCore.Pdf;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using TestWithValue.Application.AllServicesAndInterfaces.Services;
 using TestWithValue.Application.AllServicesAndInterfaces.Services_Interface;
 using TestWithValue.Domain.Enitities;
 using TestWithValue.Domain.ViewModels.Task;
+using System.IO;
+using iText.StyledXmlParser.Jsoup.Nodes;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TestWithValue.Web.Controllers
 {
@@ -19,13 +21,13 @@ namespace TestWithValue.Web.Controllers
     {
         private readonly ITaskService _taskService;
         private readonly ITicketService _ticketService;
-        private readonly IConverter _converter;
+        //private readonly IConverter _converter;
         private readonly ILogger<TaskController> _logger;
-        public TaskController(ITaskService taskService, ITicketService ticketService, IConverter converter, ILogger<TaskController> logger)
+        public TaskController(ITaskService taskService, ITicketService ticketService, /*IConverter converter,*/ ILogger<TaskController> logger)
         {
             _taskService = taskService;
             _ticketService = ticketService;
-            _converter = converter;
+            //_converter = converter;
             _logger = logger;
         }
         public IActionResult Index()
@@ -115,96 +117,96 @@ namespace TestWithValue.Web.Controllers
         }
 
 
-        [HttpPost("task/ConvertMessageToPdf")]
-        public string ConvertMessageToPdf(string message, string userId, string ticketId)
+        //public async Task<IActionResult> DownloadPdf(int taskId)
+        //{
+        //    try
+        //    {
+        //        // دریافت پیام‌ها از دیتابیس
+        //        var taskMessages = await _taskService.GetMessagesByTicketIdAsync(taskId);
+
+        //        if (taskMessages == null || !taskMessages.Any())
+        //        {
+        //            return NotFound("هیچ پیامی برای این وظیفه موجود نیست.");
+        //        }
+
+        //        // مسیر ذخیره فایل PDF
+        //        var fileDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs");
+        //        if (!Directory.Exists(fileDirectory))
+        //        {
+        //            Directory.CreateDirectory(fileDirectory);
+        //        }
+
+        //        var filePath = Path.Combine(fileDirectory, $"task_{taskId}_messages.pdf");
+
+        //        // ایجاد فایل PDF
+        //        using (FileStream stream = new FileStream(filePath, FileMode.Create))
+        //        {
+        //            Document pdfDoc = new Document(PageSize.A4, 50, 50, 25, 25);
+        //            PdfWriter writer = PdfWriter.GetInstance(pdfDoc, stream);
+        //            pdfDoc.Open();
+
+        //            // بارگذاری فونت فارسی
+        //            string fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fonts", "Tahoma.ttf");
+        //            BaseFont bf = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+        //            Font font = new Font(bf, 12, Font.NORMAL);
+
+        //            // افزودن پیام‌ها به PDF
+        //            foreach (var message in taskMessages)
+        //            {
+        //                Paragraph paragraph = new Paragraph(message.Message, font)
+        //                {
+        //                    Alignment = Element.ALIGN_RIGHT
+        //                };
+
+        //                pdfDoc.Add(paragraph);
+        //                pdfDoc.Add(new Paragraph("-----------------------------------", font)
+        //                {
+        //                    Alignment = Element.ALIGN_CENTER
+        //                });
+        //            }
+
+        //            pdfDoc.Close();
+        //            writer.Close();
+        //        }
+
+        //        // ارسال فایل به کاربر برای دانلود
+        //        var fileBytes = System.IO.File.ReadAllBytes(filePath);
+        //        System.IO.File.Delete(filePath); // حذف فایل پس از دانلود
+
+        //        return File(fileBytes, "application/pdf", Path.GetFileName(filePath));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // نمایش خطا
+        //        return StatusCode(500, $"خطایی در تولید PDF رخ داده است: {ex.Message}");
+        //    }
+        //}        /// <summary>
+                 /// شکستن متن به خطوط با طول مشخص
+                 /// </summary>
+        private List<string> SplitTextToLines(string text, int maxLength)
         {
-            string pdfPath = null;
-            try
-            {
-                string rootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Editpdf");
-
-                if (!Directory.Exists(rootPath))
-                {
-                    Directory.CreateDirectory(rootPath);
-                }
-
-                string pdfFileName = $"message_{userId}_{ticketId}.pdf";
-                pdfPath = Path.Combine(rootPath, pdfFileName);
-
-                using (var document = new PdfDocument())
-                {
-                    var page = document.AddPage();
-                    //page.Size = PageSize.A4;
-
-                    using (var gfx = XGraphics.FromPdfPage(page))
-                    {
-                        string fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Fonts", "B-NAZANIN.TTF");
-                        var fontResolver = GlobalFontSettings.FontResolver; // تنظیمات فونت برای PdfSharpCore
-                        XFont font = new XFont("B Nazanin", 12, XFontStyle.Regular);
-
-                        double margin = 20;
-                        double y = margin;
-
-                        // پردازش متن فارسی: معکوس کردن ترتیب کلمات برای نمایش درست در PdfSharp
-                        string processedMessage = ReverseTextForPdfSharp(message);
-
-                        // تقسیم متن به خطوط با عرض محدود
-                        var lines = WrapTextToFit(gfx, processedMessage, font, page.Width - 2 * margin);
-                        foreach (var line in lines)
-                        {
-                            gfx.DrawString(line, font, XBrushes.Black, new XPoint(page.Width - margin, y), XStringFormats.TopRight);
-                            y += font.GetHeight();
-                        }
-
-                        document.Save(pdfPath);
-                    }
-                }
-
-                return $"/Editpdf/{pdfFileName}";
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error creating PDF: {ex.Message}");
-                return null;
-            }
-        }
-
-        private string ReverseTextForPdfSharp(string input)
-        {
-            // معکوس کردن کلمات و ترتیب جمله‌ها
-            var words = input.Split(' ');
-            Array.Reverse(words);
-            return string.Join(" ", words);
-        }
-        // تابع برای تقسیم متن به خطوط با توجه به عرض صفحه
-        private List<string> WrapTextToFit(XGraphics gfx, string text, XFont font, double maxWidth)
-        {
+            var words = text.Split(' ');
             var lines = new List<string>();
-            var words = Regex.Split(text, @"\s+"); // تقسیم متن به کلمات
             var currentLine = "";
 
             foreach (var word in words)
             {
-                var testLine = currentLine + (currentLine.Length > 0 ? " " : "") + word;
-                var size = gfx.MeasureString(testLine, font);
-                if (size.Width > maxWidth) // اگر خط بیشتر از حداکثر عرض باشد
+                if ((currentLine + word).Length > maxLength)
                 {
-                    lines.Add(currentLine); // خط فعلی را اضافه کنید
-                    currentLine = word; // خط جدید با کلمه جدید شروع کنید
+                    lines.Add(currentLine.Trim());
+                    currentLine = "";
                 }
-                else
-                {
-                    currentLine = testLine; // ادامه‌ی خط
-                }
+                currentLine += word + " ";
             }
 
-            if (currentLine.Length > 0) // افزودن آخرین خط
+            if (!string.IsNullOrWhiteSpace(currentLine))
             {
-                lines.Add(currentLine);
+                lines.Add(currentLine.Trim());
             }
 
             return lines;
-        }        // تابع برای معکوس کردن متن
+        }
+
 
         public IActionResult SupportTask()
         {
@@ -214,18 +216,84 @@ namespace TestWithValue.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> AddTask([FromBody] AddTaskDto model)
         {
-            if (string.IsNullOrWhiteSpace(model.Title) || model.TaskDate == null)
+            if (string.IsNullOrWhiteSpace(model.Title) || string.IsNullOrWhiteSpace(model.TaskDate))
                 return BadRequest("عنوان و تاریخ وظیفه باید مشخص شوند.");
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // دریافت UserId کاربر
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var taskDateOnly = DateOnly.FromDateTime(model.TaskDate);
+            // تبدیل تاریخ شمسی به میلادی
+            DateTime taskDateMiladi;
+            try
+            {
+                var parts = model.TaskDate.Split('/'); // فرض فرمت YYYY/MM/DD
+                if (parts.Length != 3)
+                    throw new FormatException("فرمت تاریخ صحیح نیست.");
+
+                // تبدیل اعداد فارسی به اعداد انگلیسی
+                parts[0] = parts[0].Replace('۰', '0').Replace('۱', '1').Replace('۲', '2').Replace('۳', '3')
+                    .Replace('۴', '4').Replace('۵', '5').Replace('۶', '6').Replace('۷', '7').Replace('۸', '8').Replace('۹', '9');
+                parts[1] = parts[1].Replace('۰', '0').Replace('۱', '1').Replace('۲', '2').Replace('۳', '3')
+                    .Replace('۴', '4').Replace('۵', '5').Replace('۶', '6').Replace('۷', '7').Replace('۸', '8').Replace('۹', '9');
+                parts[2] = parts[2].Replace('۰', '0').Replace('۱', '1').Replace('۲', '2').Replace('۳', '3')
+                    .Replace('۴', '4').Replace('۵', '5').Replace('۶', '6').Replace('۷', '7').Replace('۸', '8').Replace('۹', '9');
+
+                // تجزیه اعداد
+                int year = int.Parse(parts[0]);
+                int month = int.Parse(parts[1]);
+                int day = int.Parse(parts[2]);
+
+                // تبدیل به میلادی با استفاده از PersianCalendar
+                var persianCalendar = new System.Globalization.PersianCalendar();
+                taskDateMiladi = persianCalendar.ToDateTime(year, month, day, 0, 0, 0, 0);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("تاریخ وارد شده صحیح نیست: " + ex.Message);
+            }
+
+            // تبدیل ساعت شروع و پایان به میلادی (اختیاری)
+            TimeOnly? taskStartTime = null;
+            TimeOnly? taskEndTime = null;
+
+            if (!string.IsNullOrEmpty(model.TaskStartTime))
+            {
+                try
+                {
+                    var startTimeParts = model.TaskStartTime.Split(':');
+                    int startHour = int.Parse(startTimeParts[0]);
+                    int startMinute = int.Parse(startTimeParts[1]);
+                    taskStartTime = new TimeOnly(startHour, startMinute);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest("ساعت شروع وارد شده صحیح نیست: " + ex.Message);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(model.TaskEndTime))
+            {
+                try
+                {
+                    var endTimeParts = model.TaskEndTime.Split(':');
+                    int endHour = int.Parse(endTimeParts[0]);
+                    int endMinute = int.Parse(endTimeParts[1]);
+                    taskEndTime = new TimeOnly(endHour, endMinute);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest("ساعت پایان وارد شده صحیح نیست: " + ex.Message);
+                }
+            }
+
             var task = new Tbl_Task
             {
-                TaskDate = taskDateOnly,
                 Title = model.Title,
-                IsDone = false,
-                UserId = userId // کاربر ایجادکننده
+                TaskDate = DateOnly.FromDateTime(taskDateMiladi), // ذخیره تاریخ میلادی
+                TaskDateString = model.TaskDate, // ذخیره تاریخ شمسی
+                TaskStartTime = taskStartTime, // ذخیره ساعت شروع اگر وجود داشته باشد
+                TaskEndTime = taskEndTime, // ذخیره ساعت پایان اگر وجود داشته باشد
+                UserId = userId,
+                IsDone = false
             };
 
             await _taskService.AddTaskAsync(task);

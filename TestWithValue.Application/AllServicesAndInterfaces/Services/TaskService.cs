@@ -131,13 +131,15 @@ namespace TestWithValue.Application.AllServicesAndInterfaces.Services
         {
             var tasks = await _taskRepository.GetAllTasksAsync();
 
-            // تبدیل داده‌ها به ViewModel
+            // تبدیل داده‌ها به ViewModel و پر کردن مقادیر
             return tasks.Select(task => new TaskViewModel
             {
-                TaskId = task.TaskId,
-                Title = task.Title,
-                TaskDate = task.TaskDate,
-                IsDone = task.IsDone
+                TaskId = task.TaskId, // شناسه تسک
+                Title = task.Title, // عنوان تسک
+                TaskDate = task.TaskDate, // تاریخ تسک
+                TaskStartTime = task.TaskStartTime, // ساعت شروع
+                TaskEndTime = task.TaskEndTime, // ساعت پایان
+                IsDone = task.IsDone// وضعیت انجام تسک
             });
         }
     }

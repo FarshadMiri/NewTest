@@ -19,6 +19,12 @@ namespace TestWithValue.Domain.Enitities
 
         public DateOnly TaskDate { get; set; }
 
+        public TimeOnly? TaskStartTime { get; set; } // ساعت شروع (اختیاری)
+
+        public TimeOnly? TaskEndTime { get; set; } // ساعت پایان (اختیاری)
+
+
+
         public bool IsDone { get; set; } // نشان‌دهنده وضعیت انجام وظیفه
 
         [ForeignKey("User")]

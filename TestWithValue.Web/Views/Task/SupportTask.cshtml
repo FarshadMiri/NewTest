@@ -6,14 +6,31 @@
 
 <!-- لینک به فایل‌های استایل persian-datepicker -->
 <link rel="stylesheet" href="https://babakhani.github.io/PersianWebToolkit/beta/lib/persian-datepicker/dist/css/persian-datepicker.css" />
+<!-- لینک به فایل‌های استایل persian-timepicker -->
+<link rel="stylesheet" href="https://babakhani.github.io/PersianWebToolkit/beta/lib/persian-timepicker/dist/css/persian-timepicker.css" />
+
+<!-- لینک به فایل‌های استایل noUiSlider -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.css" />
 
 <div id="datepicker"></div>
 
-<!-- فرم افزودن تسک -->
 <div>
     <label for="taskTitle">عنوان وظیفه:</label>
     <input type="text" id="taskTitle" placeholder="عنوان تسک را وارد کنید..." />
+</div>
 
+<!-- فیلد بازه زمانی -->
+<div>
+    <label for="timeRange">بازه زمانی ساعت:</label>
+    <div id="timeRange"></div>
+</div>
+
+<div>
+    <span id="startTime">09:00</span> تا <span id="endTime">18:00</span>
+</div>
+
+<!-- فرم افزودن تسک -->
+<div>
     <button id="addTaskButton">اضافه کردن وظیفه</button>
 </div>
 
@@ -21,41 +38,85 @@
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
     <script src="https://babakhani.github.io/PersianWebToolkit/beta/lib/persian-date/dist/persian-date.js"></script>
     <script src="https://babakhani.github.io/PersianWebToolkit/beta/lib/persian-datepicker/dist/js/persian-datepicker.js"></script>
+    <script src="https://babakhani.github.io/PersianWebToolkit/beta/lib/persian-timepicker/dist/js/persian-timepicker.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.js"></script>
 
     <script>
         let selectedDate = null;
+        let selectedTimeRange = { start: "09:00", end: "18:00" };
 
         // تنظیم تقویم فارسی
         $('#datepicker').persianDatepicker({
             inline: true,
             format: 'YYYY/MM/DD',
             onSelect: function (unixDate) {
-                selectedDate = new Date(unixDate).toISOString().split('T')[0]; // تاریخ انتخاب‌شده
+                selectedDate = new persianDate(unixDate).format('YYYY/MM/DD'); // تاریخ به فرمت شمسی
             }
+        });
+
+        // ایجاد اسلایدر برای انتخاب بازه زمانی
+        var slider = document.getElementById('timeRange');
+
+        noUiSlider.create(slider, {
+            start: [9, 18], // شروع بازه زمانی (ساعت 9 تا 18)
+            connect: true, // وصل کردن دو نقطه برای انتخاب بازه
+            range: {
+                'min': 0,    // حداقل مقدار (0 ساعت = 00:00)
+                'max': 24,   // حداکثر مقدار (24 ساعت = 23:59)
+            },
+            step: 1, // گام انتخاب (یک ساعت)
+            format: {
+                to: function (value) {
+                    var hours = Math.floor(value);
+                    var minutes = Math.round((value - hours) * 60);
+                    return hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0');
+                },
+                from: function (value) {
+                    return parseFloat(value); // حذف زمان‌خوانی به صورت غیر صحیح
+                }
+            }
+        });
+
+        // دریافت و نمایش زمان انتخاب شده
+        slider.noUiSlider.on('update', function (values, handle) {
+            var startTime = parseFloat(values[0]);  // تبدیل به عدد
+            var endTime = parseFloat(values[1]);    // تبدیل به عدد
+
+            // نمایش زمان انتخاب شده در فرمت HH:MM
+            document.getElementById('startTime').innerText = (startTime).toFixed(0).padStart(2, '0') + ":00";
+            document.getElementById('endTime').innerText = (endTime).toFixed(0).padStart(2, '0') + ":00";
+            selectedTimeRange = { start: (startTime).toFixed(0) + ":00", end: (endTime).toFixed(0) + ":00" };
         });
 
         // افزودن وظیفه
         $('#addTaskButton').on('click', function () {
             const title = $('#taskTitle').val();
-            if (!selectedDate || !title) {
-                alert('لطفاً تاریخ و عنوان وظیفه را مشخص کنید.');
+            if (!selectedDate || !selectedTimeRange || !title) {
+                alert('لطفاً تاریخ، بازه زمانی و عنوان وظیفه را مشخص کنید.');
                 return;
             }
 
-            // ارسال درخواست افزودن تسک به سرور
+            // ارسال درخواست به سرور
             $.ajax({
                 url: '@Url.Action("AddTask", "Task")',
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({ TaskDate: selectedDate, Title: title }),
+                data: JSON.stringify({
+                    TaskDate: selectedDate,
+                    TaskStartTime: selectedTimeRange.start,
+                    TaskEndTime: selectedTimeRange.end,
+                    Title: title
+                }),
                 success: function (response) {
                     alert('وظیفه با موفقیت اضافه شد.');
                     $('#taskTitle').val(''); // پاک کردن فیلد عنوان
+                    $('#timepicker').val(''); // پاک کردن فیلد زمان
                 },
                 error: function () {
                     alert('خطایی در افزودن وظیفه رخ داد.');
                 }
             });
         });
+
     </script>
 }
