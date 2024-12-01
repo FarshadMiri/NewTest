@@ -219,13 +219,10 @@ namespace TestWithValue.Web.Controllers
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // دریافت UserId کاربر
 
-            // تبدیل تاریخ از رشته به DateOnly
-            if (!DateOnly.TryParse(model.TaskDate, out var taskDate))
-                return BadRequest("تاریخ وارد شده معتبر نیست.");
-
+            var taskDateOnly = DateOnly.FromDateTime(model.TaskDate);
             var task = new Tbl_Task
             {
-                TaskDate = taskDate,
+                TaskDate = taskDateOnly,
                 Title = model.Title,
                 IsDone = false,
                 UserId = userId // کاربر ایجادکننده

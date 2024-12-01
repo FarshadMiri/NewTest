@@ -8,7 +8,7 @@ namespace TestWithValue.Domain.ViewModels.Task
 {
     public class AddTaskDto
     {
-        public string TaskDate { get; set; } // تاریخ به صورت رشته
+        public DateTime TaskDate { get; set; } 
         public string Title { get; set; } // عنوان وظیفه
     }
 }
