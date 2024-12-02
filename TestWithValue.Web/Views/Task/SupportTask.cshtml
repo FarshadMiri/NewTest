@@ -51,6 +51,7 @@
             format: 'YYYY/MM/DD',
             onSelect: function (unixDate) {
                 selectedDate = new persianDate(unixDate).format('YYYY/MM/DD'); // تاریخ به فرمت شمسی
+
             }
         });
 
@@ -58,11 +59,11 @@
         var slider = document.getElementById('timeRange');
 
         noUiSlider.create(slider, {
-            start: [9, 18], // شروع بازه زمانی (ساعت 9 تا 18)
+            start: [7, 19], // شروع بازه زمانی (ساعت 7 تا 19)
             connect: true, // وصل کردن دو نقطه برای انتخاب بازه
             range: {
-                'min': 0,    // حداقل مقدار (0 ساعت = 00:00)
-                'max': 24,   // حداکثر مقدار (24 ساعت = 23:59)
+                'min': 7,    // حداقل مقدار (7 صبح)
+                'max': 19,   // حداکثر مقدار (19 عصر)
             },
             step: 1, // گام انتخاب (یک ساعت)
             format: {
@@ -72,7 +73,7 @@
                     return hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0');
                 },
                 from: function (value) {
-                    return parseFloat(value); // حذف زمان‌خوانی به صورت غیر صحیح
+                    return parseFloat(value); // تبدیل زمان به عدد
                 }
             }
         });
@@ -87,6 +88,7 @@
             document.getElementById('endTime').innerText = (endTime).toFixed(0).padStart(2, '0') + ":00";
             selectedTimeRange = { start: (startTime).toFixed(0) + ":00", end: (endTime).toFixed(0) + ":00" };
         });
+
 
         // افزودن وظیفه
         $('#addTaskButton').on('click', function () {

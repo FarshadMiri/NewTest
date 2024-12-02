@@ -12,8 +12,8 @@ using TestWithValue.Data;
 namespace TestWithValue.Data.Migrations
 {
     [DbContext(typeof(TestWithValueDbContext))]
-    [Migration("20241201132614_changetbltask")]
-    partial class changetbltask
+    [Migration("20241202141648_start")]
+    partial class start
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -273,6 +273,8 @@ namespace TestWithValue.Data.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TaskDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    TaskStartTime = table.Column<TimeOnly>(type: "time", nullable: true),
+                    TaskEndTime = table.Column<TimeOnly>(type: "time", nullable: true),
                     IsDone = table.Column<bool>(type: "bit", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     TaskDateString = table.Column<string>(type: "nvarchar(max)", nullable: true)
