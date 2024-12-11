@@ -23,6 +23,8 @@ namespace TestWithValue.Application.AllServicesAndInterfaces.Services
             var locations = await _locationRepository.GetAllLocationsAsync();
             return locations.Select(loc => new DropdownItem
             {
+                LocationId=loc.LocationId,
+                Name=loc.Name,  
                 Value = loc.LocationId.ToString(),
                 Text = loc.Name
             }).ToList();

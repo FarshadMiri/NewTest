@@ -12,8 +12,8 @@ using TestWithValue.Data;
 namespace TestWithValue.Data.Migrations
 {
     [DbContext(typeof(TestWithValueDbContext))]
-    [Migration("20241211055507_change")]
-    partial class change
+    [Migration("20241211081215_start")]
+    partial class start
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -555,6 +555,12 @@ namespace TestWithValue.Data.Migrations
                     b.Property<bool>("IsDone")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LocationName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateOnly>("TaskDate")
                         .HasColumnType("date");
 
@@ -575,6 +581,8 @@ namespace TestWithValue.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("TaskId");
+
+                    b.HasIndex("LocationId");
 
                     b.HasIndex("UserId");
 
@@ -979,9 +987,15 @@ namespace TestWithValue.Data.Migrations
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Task", b =>
                 {
+                    b.HasOne("TestWithValue.Domain.Enitities.Tbl_Location", "Location")
+                        .WithMany("Tasks")
+                        .HasForeignKey("LocationId");
+
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
+
+                    b.Navigation("Location");
 
                     b.Navigation("User");
                 });
@@ -1048,6 +1062,8 @@ namespace TestWithValue.Data.Migrations
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Location", b =>
                 {
                     b.Navigation("Cases");
+
+                    b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Province", b =>

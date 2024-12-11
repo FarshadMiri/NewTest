@@ -9,6 +9,7 @@ namespace TestWithValue.Domain.ViewModels.Task
 {
     public class SupportTaskViewModel
     {
-        public List<DropdownItem> Locations { get; set; } // لیست موقعیت‌ها    }
+        public List<DropdownItem> Locations { get; set; } // لیست موقعیت‌ها
+        public int SelectedLocationId { get; set; }        // مقدار انتخاب شده    }
     }
 }

@@ -122,72 +122,6 @@ namespace TestWithValue.Web.Controllers
         }
 
 
-        //public async Task<IActionResult> DownloadPdf(int taskId)
-        //{
-        //    try
-        //    {
-        //        // دریافت پیام‌ها از دیتابیس
-        //        var taskMessages = await _taskService.GetMessagesByTicketIdAsync(taskId);
-
-        //        if (taskMessages == null || !taskMessages.Any())
-        //        {
-        //            return NotFound("هیچ پیامی برای این وظیفه موجود نیست.");
-        //        }
-
-        //        // مسیر ذخیره فایل PDF
-        //        var fileDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdfs");
-        //        if (!Directory.Exists(fileDirectory))
-        //        {
-        //            Directory.CreateDirectory(fileDirectory);
-        //        }
-
-        //        var filePath = Path.Combine(fileDirectory, $"task_{taskId}_messages.pdf");
-
-        //        // ایجاد فایل PDF
-        //        using (FileStream stream = new FileStream(filePath, FileMode.Create))
-        //        {
-        //            Document pdfDoc = new Document(PageSize.A4, 50, 50, 25, 25);
-        //            PdfWriter writer = PdfWriter.GetInstance(pdfDoc, stream);
-        //            pdfDoc.Open();
-
-        //            // بارگذاری فونت فارسی
-        //            string fontPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "fonts", "Tahoma.ttf");
-        //            BaseFont bf = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-        //            Font font = new Font(bf, 12, Font.NORMAL);
-
-        //            // افزودن پیام‌ها به PDF
-        //            foreach (var message in taskMessages)
-        //            {
-        //                Paragraph paragraph = new Paragraph(message.Message, font)
-        //                {
-        //                    Alignment = Element.ALIGN_RIGHT
-        //                };
-
-        //                pdfDoc.Add(paragraph);
-        //                pdfDoc.Add(new Paragraph("-----------------------------------", font)
-        //                {
-        //                    Alignment = Element.ALIGN_CENTER
-        //                });
-        //            }
-
-        //            pdfDoc.Close();
-        //            writer.Close();
-        //        }
-
-        //        // ارسال فایل به کاربر برای دانلود
-        //        var fileBytes = System.IO.File.ReadAllBytes(filePath);
-        //        System.IO.File.Delete(filePath); // حذف فایل پس از دانلود
-
-        //        return File(fileBytes, "application/pdf", Path.GetFileName(filePath));
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // نمایش خطا
-        //        return StatusCode(500, $"خطایی در تولید PDF رخ داده است: {ex.Message}");
-        //    }
-        //}        /// <summary>
-        /// شکستن متن به خطوط با طول مشخص
-        /// </summary>
         private List<string> SplitTextToLines(string text, int maxLength)
         {
             var words = text.Split(' ');
@@ -213,13 +147,24 @@ namespace TestWithValue.Web.Controllers
         }
 
 
-        public async Task<IActionResult>  SupportTask()
+        public async Task<IActionResult> SupportTask()
         {
-            var locations = await _locationService.GetLocationsForDropdownAsync(); // یا هر روش دیگری برای بارگذاری موقعیت‌ها
+            // دریافت داده‌های موقعیت‌های مکانی از سرویس
+            var locations = await _locationService.GetLocationsForDropdownAsync();
 
+            // تبدیل داده‌ها به فرمت DropdownItem
+            var dropdownItems = locations.Select(location => new DropdownItem
+            {
+                LocationId = location.LocationId, // شناسه موقعیت
+                Name = location.Name,             // نام موقعیت
+                Value = location.LocationId.ToString(),
+                Text = location.Name
+            }).ToList();
+
+            // مدل برای پاس دادن به ویو
             var model = new SupportTaskViewModel
             {
-                Locations = locations // مقداردهی موقعیت‌ها
+                Locations = dropdownItems
             };
 
             return View(model);
@@ -240,12 +185,9 @@ namespace TestWithValue.Web.Controllers
                 if (parts.Length != 3)
                     throw new FormatException("فرمت تاریخ صحیح نیست.");
 
-                parts[0] = parts[0].Replace('۰', '0').Replace('۱', '1').Replace('۲', '2').Replace('۳', '3')
-                    .Replace('۴', '4').Replace('۵', '5').Replace('۶', '6').Replace('۷', '7').Replace('۸', '8').Replace('۹', '9');
-                parts[1] = parts[1].Replace('۰', '0').Replace('۱', '1').Replace('۲', '2').Replace('۳', '3')
-                    .Replace('۴', '4').Replace('۵', '5').Replace('۶', '6').Replace('۷', '7').Replace('۸', '8').Replace('۹', '9');
-                parts[2] = parts[2].Replace('۰', '0').Replace('۱', '1').Replace('۲', '2').Replace('۳', '3')
-                    .Replace('۴', '4').Replace('۵', '5').Replace('۶', '6').Replace('۷', '7').Replace('۸', '8').Replace('۹', '9');
+                parts = parts.Select(p => p.Replace('۰', '0').Replace('۱', '1').Replace('۲', '2')
+                    .Replace('۳', '3').Replace('۴', '4').Replace('۵', '5').Replace('۶', '6')
+                    .Replace('۷', '7').Replace('۸', '8').Replace('۹', '9')).ToArray();
 
                 int year = int.Parse(parts[0]);
                 int month = int.Parse(parts[1]);
@@ -278,17 +220,7 @@ namespace TestWithValue.Web.Controllers
                 taskEndTime = new TimeOnly(endHour, endMinute);
             }
 
-            // دریافت نام موقعیت از جدول Tbl_Location
-            string locationName = string.Empty;
-            if (model.LocationId.HasValue)
-            {
-                var location = await _locationService.GetLocationByIdAsync(model.LocationId.Value);
-                if (location != null)
-                {
-                    locationName = location.Name;
-                }
-            }
-
+            // ذخیره وظیفه
             var task = new Tbl_Task
             {
                 Title = model.Title,
@@ -297,8 +229,7 @@ namespace TestWithValue.Web.Controllers
                 TaskStartTime = taskStartTime,
                 TaskEndTime = taskEndTime,
                 UserId = userId,
-                LocationId = model.LocationId, // ذخیره موقعیت مکانی
-                LocationName = locationName, // ذخیره نام موقعیت مکانی
+                LocationName = model.LocationName, // ذخیره نام موقعیت مکانی
                 IsDone = false
             };
 
