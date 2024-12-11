@@ -1,0 +1,74 @@
+﻿@using TestWithValue.Domain.ViewModels.CaseViewModel
+@model IEnumerable<CaseViewModel>
+
+<h2>پرونده‌های کاربر</h2>
+
+<table class="case-table">
+    <thead>
+        <tr>
+            <th>عنوان</th>
+            <th>نوع</th>
+            <th>وضعیت</th>
+            <th>موقعیت</th>
+            <th>تاریخ</th>
+            <th>زمان</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Title</td>
+                <td>@item.CaseType</td>
+                <td>@(item.IsDone ? "انجام شده" : "در حال انجام")</td>
+                <td>@item.Location</td>
+                <td>@item.Date</td>
+                <td>@item.Time</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<style>
+    .case-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-family: 'Arial', sans-serif;
+    }
+
+        .case-table th,
+        .case-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        .case-table th {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 18px;
+        }
+
+        .case-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .case-table tr:hover {
+            background-color: #ddd;
+        }
+
+        .case-table td {
+            font-size: 16px;
+        }
+
+        .case-table td, .case-table th {
+            text-align: center;
+        }
+
+    h2 {
+        font-family: 'Arial', sans-serif;
+        color: #333;
+        margin-bottom: 20px;
+    }
+</style>

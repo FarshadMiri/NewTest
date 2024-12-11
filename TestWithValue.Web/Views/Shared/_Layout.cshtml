@@ -37,6 +37,15 @@
                             <li class="nav-item ml-auto">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Task" asp-action="ShowRequest">پیگیری در خواست </a>
                             </li>
+
+                            <li class="nav-item ml-auto">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Case" asp-action="Create">تشکیل پرونده  </a>
+                            </li>
+                            <li class="nav-item ml-auto">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Case" asp-action="UserCases">لیست پرونده ها  </a>
+                            </li>
+
+
                             @if (User.IsInRole("Agent"))
                             {
                                 <li class="nav-item ml-auto">

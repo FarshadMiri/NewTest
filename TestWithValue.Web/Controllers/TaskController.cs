@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using SkiaSharp;
 
 namespace TestWithValue.Web.Controllers
 {
@@ -22,13 +23,17 @@ namespace TestWithValue.Web.Controllers
         private readonly ITaskService _taskService;
         private readonly ITicketService _ticketService;
         //private readonly IConverter _converter;
+        private readonly ILocationService  _locationService;
+
         private readonly ILogger<TaskController> _logger;
-        public TaskController(ITaskService taskService, ITicketService ticketService, /*IConverter converter,*/ ILogger<TaskController> logger)
+
+        public TaskController(ITaskService taskService, ITicketService ticketService, /*IConverter converter,*/ ILogger<TaskController> logger, ILocationService locationService)
         {
             _taskService = taskService;
             _ticketService = ticketService;
             //_converter = converter;
             _logger = logger;
+            _locationService = locationService; 
         }
         public IActionResult Index()
         {
@@ -208,10 +213,16 @@ namespace TestWithValue.Web.Controllers
         }
 
 
-        public IActionResult SupportTask()
+        public async Task<IActionResult>  SupportTask()
         {
+            var locations = await _locationService.GetLocationsForDropdownAsync(); // یا هر روش دیگری برای بارگذاری موقعیت‌ها
 
-            return View();
+            var model = new SupportTaskViewModel
+            {
+                Locations = locations // مقداردهی موقعیت‌ها
+            };
+
+            return View(model);
         }
         [HttpPost]
         public async Task<IActionResult> AddTask([FromBody] AddTaskDto model)
@@ -225,11 +236,10 @@ namespace TestWithValue.Web.Controllers
             DateTime taskDateMiladi;
             try
             {
-                var parts = model.TaskDate.Split('/'); // فرض فرمت YYYY/MM/DD
+                var parts = model.TaskDate.Split('/');
                 if (parts.Length != 3)
                     throw new FormatException("فرمت تاریخ صحیح نیست.");
 
-                // تبدیل اعداد فارسی به اعداد انگلیسی
                 parts[0] = parts[0].Replace('۰', '0').Replace('۱', '1').Replace('۲', '2').Replace('۳', '3')
                     .Replace('۴', '4').Replace('۵', '5').Replace('۶', '6').Replace('۷', '7').Replace('۸', '8').Replace('۹', '9');
                 parts[1] = parts[1].Replace('۰', '0').Replace('۱', '1').Replace('۲', '2').Replace('۳', '3')
@@ -237,12 +247,10 @@ namespace TestWithValue.Web.Controllers
                 parts[2] = parts[2].Replace('۰', '0').Replace('۱', '1').Replace('۲', '2').Replace('۳', '3')
                     .Replace('۴', '4').Replace('۵', '5').Replace('۶', '6').Replace('۷', '7').Replace('۸', '8').Replace('۹', '9');
 
-                // تجزیه اعداد
                 int year = int.Parse(parts[0]);
                 int month = int.Parse(parts[1]);
                 int day = int.Parse(parts[2]);
 
-                // تبدیل به میلادی با استفاده از PersianCalendar
                 var persianCalendar = new System.Globalization.PersianCalendar();
                 taskDateMiladi = persianCalendar.ToDateTime(year, month, day, 0, 0, 0, 0);
             }
@@ -251,48 +259,46 @@ namespace TestWithValue.Web.Controllers
                 return BadRequest("تاریخ وارد شده صحیح نیست: " + ex.Message);
             }
 
-            // تبدیل ساعت شروع و پایان به میلادی (اختیاری)
             TimeOnly? taskStartTime = null;
             TimeOnly? taskEndTime = null;
 
             if (!string.IsNullOrEmpty(model.TaskStartTime))
             {
-                try
-                {
-                    var startTimeParts = model.TaskStartTime.Split(':');
-                    int startHour = int.Parse(startTimeParts[0]);
-                    int startMinute = int.Parse(startTimeParts[1]);
-                    taskStartTime = new TimeOnly(startHour, startMinute);
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest("ساعت شروع وارد شده صحیح نیست: " + ex.Message);
-                }
+                var startTimeParts = model.TaskStartTime.Split(':');
+                int startHour = int.Parse(startTimeParts[0]);
+                int startMinute = int.Parse(startTimeParts[1]);
+                taskStartTime = new TimeOnly(startHour, startMinute);
             }
 
             if (!string.IsNullOrEmpty(model.TaskEndTime))
             {
-                try
+                var endTimeParts = model.TaskEndTime.Split(':');
+                int endHour = int.Parse(endTimeParts[0]);
+                int endMinute = int.Parse(endTimeParts[1]);
+                taskEndTime = new TimeOnly(endHour, endMinute);
+            }
+
+            // دریافت نام موقعیت از جدول Tbl_Location
+            string locationName = string.Empty;
+            if (model.LocationId.HasValue)
+            {
+                var location = await _locationService.GetLocationByIdAsync(model.LocationId.Value);
+                if (location != null)
                 {
-                    var endTimeParts = model.TaskEndTime.Split(':');
-                    int endHour = int.Parse(endTimeParts[0]);
-                    int endMinute = int.Parse(endTimeParts[1]);
-                    taskEndTime = new TimeOnly(endHour, endMinute);
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest("ساعت پایان وارد شده صحیح نیست: " + ex.Message);
+                    locationName = location.Name;
                 }
             }
 
             var task = new Tbl_Task
             {
                 Title = model.Title,
-                TaskDate = DateOnly.FromDateTime(taskDateMiladi), // ذخیره تاریخ میلادی
-                TaskDateString = model.TaskDate, // ذخیره تاریخ شمسی
-                TaskStartTime = taskStartTime, // ذخیره ساعت شروع اگر وجود داشته باشد
-                TaskEndTime = taskEndTime, // ذخیره ساعت پایان اگر وجود داشته باشد
+                TaskDate = DateOnly.FromDateTime(taskDateMiladi),
+                TaskDateString = model.TaskDate,
+                TaskStartTime = taskStartTime,
+                TaskEndTime = taskEndTime,
                 UserId = userId,
+                LocationId = model.LocationId, // ذخیره موقعیت مکانی
+                LocationName = locationName, // ذخیره نام موقعیت مکانی
                 IsDone = false
             };
 

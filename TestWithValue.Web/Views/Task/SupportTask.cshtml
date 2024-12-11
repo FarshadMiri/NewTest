@@ -1,4 +1,6 @@
-﻿@{
+﻿@using TestWithValue.Domain.ViewModels.Task
+@model SupportTaskViewModel
+@{
     ViewData["Title"] = "افزودن وظیفه";
 }
 
@@ -18,7 +20,16 @@
     <label for="taskTitle">عنوان وظیفه:</label>
     <input type="text" id="taskTitle" placeholder="عنوان تسک را وارد کنید..." />
 </div>
-
+<div>
+    <label for="LocationId">موقعیت مکانی:</label>
+    <select id="LocationId">
+        <option value="">انتخاب موقعیت</option>
+        @foreach (var location in Model.Locations)
+        {
+            <option value="@location.LocationId">@location.Name</option>
+        }
+    </select>
+</div>
 <!-- فیلد بازه زمانی -->
 <div>
     <label for="timeRange">بازه زمانی ساعت:</label>
@@ -99,24 +110,37 @@
             }
 
             // ارسال درخواست به سرور
-            $.ajax({
-                url: '@Url.Action("AddTask", "Task")',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    TaskDate: selectedDate,
-                    TaskStartTime: selectedTimeRange.start,
-                    TaskEndTime: selectedTimeRange.end,
-                    Title: title
-                }),
-                success: function (response) {
-                    alert('وظیفه با موفقیت اضافه شد.');
-                    $('#taskTitle').val(''); // پاک کردن فیلد عنوان
-                    $('#timepicker').val(''); // پاک کردن فیلد زمان
-                },
-                error: function () {
-                    alert('خطایی در افزودن وظیفه رخ داد.');
+            // افزودن وظیفه
+            $('#addTaskButton').on('click', function () {
+                const title = $('#taskTitle').val();
+                const locationId = $('#LocationId').val();  // دریافت شناسه موقعیت
+
+                if (!selectedDate || !selectedTimeRange || !title || !locationId) {
+                    alert('لطفاً تاریخ، بازه زمانی، عنوان وظیفه و موقعیت مکانی را مشخص کنید.');
+                    return;
                 }
+
+                // ارسال درخواست به سرور
+                $.ajax({
+                    url: '@Url.Action("AddTask", "Task")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        TaskDate: selectedDate,
+                        TaskStartTime: selectedTimeRange.start,
+                        TaskEndTime: selectedTimeRange.end,
+                        Title: title,
+                        LocationId: locationId  // ارسال شناسه موقعیت
+                    }),
+                    success: function (response) {
+                        alert('وظیفه با موفقیت اضافه شد.');
+                        $('#taskTitle').val(''); // پاک کردن فیلد عنوان
+                        $('#LocationId').val(''); // پاک کردن فیلد موقعیت
+                    },
+                    error: function () {
+                        alert('خطایی در افزودن وظیفه رخ داد.');
+                    }
+                });
             });
         });
 

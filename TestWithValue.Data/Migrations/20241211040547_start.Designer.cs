@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TestWithValue.Data;
 
@@ -11,9 +12,11 @@ using TestWithValue.Data;
 namespace TestWithValue.Data.Migrations
 {
     [DbContext(typeof(TestWithValueDbContext))]
-    partial class TestWithValueDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241211040547_start")]
+    partial class start
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -281,47 +284,6 @@ namespace TestWithValue.Data.Migrations
                     b.ToTable("tbl_CartItems");
                 });
 
-            modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Case", b =>
-                {
-                    b.Property<int>("CaseId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CaseId"));
-
-                    b.Property<string>("CaseType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<bool>("IsDone")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("LocationId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("LocationName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<TimeOnly>("Time")
-                        .HasColumnType("time");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("CaseId");
-
-                    b.HasIndex("LocationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("tbl_Cases");
-                });
-
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_City", b =>
                 {
                     b.Property<int>("CityId")
@@ -341,74 +303,6 @@ namespace TestWithValue.Data.Migrations
                     b.HasIndex("ProvinceId");
 
                     b.ToTable("tbl_Cities");
-                });
-
-            modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Location", b =>
-                {
-                    b.Property<int>("LocationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LocationId"));
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("LocationId");
-
-                    b.ToTable("tbl_Locations");
-
-                    b.HasData(
-                        new
-                        {
-                            LocationId = 1,
-                            Name = "شعبه دادگاه تهران"
-                        },
-                        new
-                        {
-                            LocationId = 2,
-                            Name = "شعبه دادگاه مشهد"
-                        },
-                        new
-                        {
-                            LocationId = 3,
-                            Name = "شعبه دادگاه اصفهان"
-                        },
-                        new
-                        {
-                            LocationId = 4,
-                            Name = "شعبه دادگاه شیراز"
-                        },
-                        new
-                        {
-                            LocationId = 5,
-                            Name = "شعبه دادگاه تبریز"
-                        },
-                        new
-                        {
-                            LocationId = 6,
-                            Name = "شعبه دادگاه کرج"
-                        },
-                        new
-                        {
-                            LocationId = 7,
-                            Name = "شعبه دادگاه اهواز"
-                        },
-                        new
-                        {
-                            LocationId = 8,
-                            Name = "شعبه دادگاه قم"
-                        },
-                        new
-                        {
-                            LocationId = 9,
-                            Name = "شعبه دادگاه رشت"
-                        },
-                        new
-                        {
-                            LocationId = 10,
-                            Name = "شعبه دادگاه یزد"
-                        });
                 });
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Option", b =>
@@ -552,12 +446,6 @@ namespace TestWithValue.Data.Migrations
                     b.Property<bool>("IsDone")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("LocationId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("LocationName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateOnly>("TaskDate")
                         .HasColumnType("date");
 
@@ -578,8 +466,6 @@ namespace TestWithValue.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("TaskId");
-
-                    b.HasIndex("LocationId");
 
                     b.HasIndex("UserId");
 
@@ -908,21 +794,6 @@ namespace TestWithValue.Data.Migrations
                     b.Navigation("Topic");
                 });
 
-            modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Case", b =>
-                {
-                    b.HasOne("TestWithValue.Domain.Enitities.Tbl_Location", "Location")
-                        .WithMany("Cases")
-                        .HasForeignKey("LocationId");
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Location");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_City", b =>
                 {
                     b.HasOne("TestWithValue.Domain.Enitities.Tbl_Province", "province")
@@ -984,15 +855,9 @@ namespace TestWithValue.Data.Migrations
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Task", b =>
                 {
-                    b.HasOne("TestWithValue.Domain.Enitities.Tbl_Location", "Location")
-                        .WithMany("Tasks")
-                        .HasForeignKey("LocationId");
-
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
-
-                    b.Navigation("Location");
 
                     b.Navigation("User");
                 });
@@ -1054,13 +919,6 @@ namespace TestWithValue.Data.Migrations
                         .HasForeignKey("UserId");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Location", b =>
-                {
-                    b.Navigation("Cases");
-
-                    b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Province", b =>

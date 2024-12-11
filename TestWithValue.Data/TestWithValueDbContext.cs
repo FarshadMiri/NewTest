@@ -36,6 +36,9 @@ namespace TestWithValue.Data
         public DbSet<Tbl_ReportInfo>  tbl_ReportInfos { get; set; }
         public DbSet<Tbl_Request> tbl_Requests { get; set; }
         public DbSet<Tbl_Task> tbl_Tasks { get; set; }
+        public DbSet<Tbl_Case>  tbl_Cases { get; set; }
+        public DbSet<Tbl_Location>  tbl_Locations { get; set; }
+
 
 
 
@@ -47,6 +50,19 @@ namespace TestWithValue.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Tbl_Test>().HasKey(t => t.TestId);
+            modelBuilder.Entity<Tbl_Location>().HasData(
+new Tbl_Location { LocationId = 1, Name = "شعبه دادگاه تهران" },
+new Tbl_Location { LocationId = 2, Name = "شعبه دادگاه مشهد" },
+new Tbl_Location { LocationId = 3, Name = "شعبه دادگاه اصفهان" },
+new Tbl_Location { LocationId = 4, Name = "شعبه دادگاه شیراز" },
+new Tbl_Location { LocationId = 5, Name = "شعبه دادگاه تبریز" },
+new Tbl_Location { LocationId = 6, Name = "شعبه دادگاه کرج" },
+new Tbl_Location { LocationId = 7, Name = "شعبه دادگاه اهواز" },
+new Tbl_Location { LocationId = 8, Name = "شعبه دادگاه قم" },
+new Tbl_Location { LocationId = 9, Name = "شعبه دادگاه رشت" },
+new Tbl_Location { LocationId = 10, Name = "شعبه دادگاه یزد" }
+);
+
 
             modelBuilder.Entity<Tbl_Answer>()
                 .HasKey(a => a.AnswerId);

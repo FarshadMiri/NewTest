@@ -8,9 +8,11 @@ namespace TestWithValue.Domain.ViewModels.Task
 {
     public class AddTaskDto
     {
+        public string Title { get; set; }
         public string TaskDate { get; set; }
-        public string Title { get; set; } // عنوان وظیفه
-        public string TaskStartTime { get; set; } // ساعت شروع (اختیاری)
-        public string TaskEndTime { get; set; } // ساعت پایان (اختیاری)
+        public string TaskStartTime { get; set; }
+        public string TaskEndTime { get; set; }
+        public int? LocationId { get; set; } // شناسه موقعیت مکانی
+        public string LocationName { get; set; } // نام موقعیت مکانی (اضافه شده)
     }
 }

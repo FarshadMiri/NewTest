@@ -89,6 +89,16 @@ namespace TestWithValue.Infrastructure.IOC
             services.AddScoped<ITaskRepository, TaskRepository>();
             services.AddScoped<ITaskService, TaskService>();
 
+            services.AddScoped<ICaseRepository, CaseRepository>();
+            services.AddScoped<ICaseService, CaseService>();
+
+
+            services.AddScoped<ILocationRepository, LocationRepository>();
+            services.AddScoped<ILocationService, LocationService>();
+
+
+
+
 
 
 
