@@ -56,5 +56,11 @@ namespace TestWithValue.Data.Repository
         {
             await _context.SaveChangesAsync();
         }
+        public List<Tbl_Case> GetCasesByDateAndLocation(DateOnly date, string locationName)
+        {
+            return _context.tbl_Cases
+                .Where(c => c.Date == date && c.LocationName == locationName)
+                .ToList();
+        }
     }
 }

@@ -37,7 +37,9 @@ namespace TestWithValue.Data
         public DbSet<Tbl_Request> tbl_Requests { get; set; }
         public DbSet<Tbl_Task> tbl_Tasks { get; set; }
         public DbSet<Tbl_Case>  tbl_Cases { get; set; }
-        public DbSet<Tbl_Location>  tbl_Locations { get; set; }
+        public DbSet<Tbl_Location> tbl_Locations { get; set; }
+        public DbSet<Tbl_SuggestedCase>  tbl_SuggestedCases { get; set; }
+
 
 
 

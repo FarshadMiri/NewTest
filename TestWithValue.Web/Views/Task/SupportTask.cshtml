@@ -10,7 +10,6 @@
 <link rel="stylesheet" href="https://babakhani.github.io/PersianWebToolkit/beta/lib/persian-datepicker/dist/css/persian-datepicker.css" />
 <!-- لینک به فایل‌های استایل persian-timepicker -->
 <link rel="stylesheet" href="https://babakhani.github.io/PersianWebToolkit/beta/lib/persian-timepicker/dist/css/persian-timepicker.css" />
-
 <!-- لینک به فایل‌های استایل noUiSlider -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.css" />
 
@@ -44,6 +43,9 @@
     <button id="addTaskButton">اضافه کردن وظیفه</button>
 </div>
 
+<!-- لیست پرونده‌های پیشنهادی -->
+<div id="caseList"></div>
+
 @section Scripts {
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
     <script src="https://babakhani.github.io/PersianWebToolkit/beta/lib/persian-date/dist/persian-date.js"></script>
@@ -60,8 +62,9 @@
             inline: true,
             format: 'YYYY/MM/DD',
             onSelect: function (unixDate) {
-                selectedDate = new persianDate(unixDate).format('YYYY/MM/DD'); // تاریخ به فرمت شمسی
-
+                selectedDate = new persianDate(unixDate).format('YYYY/MM/DD');
+                const locationName = $('#LocationName').val();
+                getCasesByTask(selectedDate, locationName);
             }
         });
 
@@ -69,13 +72,13 @@
         var slider = document.getElementById('timeRange');
 
         noUiSlider.create(slider, {
-            start: [7, 19], // شروع بازه زمانی (ساعت 7 تا 19)
-            connect: true, // وصل کردن دو نقطه برای انتخاب بازه
+            start: [7, 19],
+            connect: true,
             range: {
-                'min': 7,    // حداقل مقدار (7 صبح)
-                'max': 19,   // حداکثر مقدار (19 عصر)
+                'min': 7,
+                'max': 19,
             },
-            step: 1, // گام انتخاب (یک ساعت)
+            step: 1,
             format: {
                 to: function (value) {
                     var hours = Math.floor(value);
@@ -83,34 +86,57 @@
                     return hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0');
                 },
                 from: function (value) {
-                    return parseFloat(value); // تبدیل زمان به عدد
+                    return parseFloat(value);
                 }
             }
         });
 
         // دریافت و نمایش زمان انتخاب شده
         slider.noUiSlider.on('update', function (values, handle) {
-            var startTime = parseFloat(values[0]);  // تبدیل به عدد
-            var endTime = parseFloat(values[1]);    // تبدیل به عدد
+            var startTime = values[0];
+            var endTime = values[1];
 
-            // نمایش زمان انتخاب شده در فرمت HH:MM
-            document.getElementById('startTime').innerText = (startTime).toFixed(0).padStart(2, '0') + ":00";
-            document.getElementById('endTime').innerText = (endTime).toFixed(0).padStart(2, '0') + ":00";
-            selectedTimeRange = { start: (startTime).toFixed(0) + ":00", end: (endTime).toFixed(0) + ":00" };
+            document.getElementById('startTime').innerText = startTime;
+            document.getElementById('endTime').innerText = endTime;
+            selectedTimeRange = { start: startTime, end: endTime };
         });
 
+        // متد برای ارسال درخواست دریافت پرونده‌ها
+        function getCasesByTask(taskDate, locationName) {
+            if (!taskDate || !locationName) return;
+
+            $.ajax({
+                url: '/Task/GetCasesByTask',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    TaskDate: taskDate,
+                    LocationName: locationName
+                }),
+                success: function (response) {
+                    alert(response.Message);
+
+                    if (response.Cases.length > 0) {
+                        console.log('Cases:', response.Cases);
+                        // اینجا می‌توانید داده‌های پرونده‌ها را در HTML نمایش دهید.
+                    }
+                },
+                error: function () {
+                    alert('خطایی رخ داد. لطفاً دوباره تلاش کنید.');
+                }
+            });
+        }
 
         // افزودن وظیفه
         $('#addTaskButton').on('click', function () {
             const title = $('#taskTitle').val();
-            const locationName = $('#LocationName').val(); // دریافت نام موقعیت مکانی
+            const locationName = $('#LocationName').val();
 
             if (!selectedDate || !selectedTimeRange || !title || !locationName) {
-                alert('لطفاً تاریخ، بازه زمانی، عنوان وظیفه و نام موقعیت مکانی را مشخص کنید.');
+                alert('لطفاً تمام فیلدها را پر کنید.');
                 return;
             }
 
-            // ارسال درخواست به سرور
             $.ajax({
                 url: '@Url.Action("AddTask", "Task")',
                 type: 'POST',
@@ -120,12 +146,13 @@
                     TaskStartTime: selectedTimeRange.start,
                     TaskEndTime: selectedTimeRange.end,
                     Title: title,
-                    LocationName: locationName // ارسال نام موقعیت مکانی
+                    LocationName: locationName
                 }),
                 success: function (response) {
                     alert('وظیفه با موفقیت اضافه شد.');
-                    $('#taskTitle').val(''); // پاک کردن فیلد عنوان
-                    $('#LocationName').val(''); // پاک کردن فیلد موقعیت
+                    $('#taskTitle').val('');
+                    $('#LocationName').val('');
+                    getCasesByTask(selectedDate, locationName);
                 },
                 error: function () {
                     alert('خطایی در افزودن وظیفه رخ داد.');

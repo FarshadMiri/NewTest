@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TestWithValue.Domain.Enitities;
+using TestWithValue.Domain.ViewModels.Case;
 using TestWithValue.Domain.ViewModels.CaseViewModel;
 
 namespace TestWithValue.Application.AllServicesAndInterfaces.Services_Interface
@@ -14,5 +15,6 @@ namespace TestWithValue.Application.AllServicesAndInterfaces.Services_Interface
         Task<CaseViewModel> GetCaseByIdAsync(int caseId);
         Task<IEnumerable<CaseViewModel>> GetCasesByUserIdAsync(string userId); // اضافه شده
         Task AddCaseAsync(Tbl_Case newCase);
+        (string Message, List<CaseDto> Cases) GetCasesAndSaveSuggested(string taskDate, string locationName, string createdBy);
     }
 }

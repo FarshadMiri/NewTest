@@ -23,17 +23,20 @@ namespace TestWithValue.Web.Controllers
         private readonly ITaskService _taskService;
         private readonly ITicketService _ticketService;
         //private readonly IConverter _converter;
-        private readonly ILocationService  _locationService;
+        private readonly ILocationService _locationService;
+        private readonly ICaseService _caseService;
+
 
         private readonly ILogger<TaskController> _logger;
 
-        public TaskController(ITaskService taskService, ITicketService ticketService, /*IConverter converter,*/ ILogger<TaskController> logger, ILocationService locationService)
+        public TaskController(ITaskService taskService, ITicketService ticketService, /*IConverter converter,*/ ILogger<TaskController> logger, ILocationService locationService, ICaseService caseService)
         {
             _taskService = taskService;
             _ticketService = ticketService;
             //_converter = converter;
             _logger = logger;
-            _locationService = locationService; 
+            _locationService = locationService;
+            _caseService = caseService; 
         }
         public IActionResult Index()
         {
@@ -169,6 +172,22 @@ namespace TestWithValue.Web.Controllers
 
             return View(model);
         }
+        [HttpPost]
+        public IActionResult GetCasesByTask(string TaskDate, string LocationName)
+        {
+            string createdBy = User.Identity?.Name;
+
+            // استفاده از سرویس
+            var result = _caseService.GetCasesAndSaveSuggested(TaskDate, LocationName, createdBy);
+
+            // بازگشت پیام و داده‌ها
+            return Json(new
+            {
+                Message = result.Message,
+                Cases = result.Cases // اینجا از DTO استفاده می‌شود
+            });
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddTask([FromBody] AddTaskDto model)
         {

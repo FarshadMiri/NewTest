@@ -96,6 +96,9 @@ namespace TestWithValue.Infrastructure.IOC
             services.AddScoped<ILocationRepository, LocationRepository>();
             services.AddScoped<ILocationService, LocationService>();
 
+            services.AddScoped<ISuggestedCaseRepository, SuggestedCaseRepository>();
+
+
 
 
 
