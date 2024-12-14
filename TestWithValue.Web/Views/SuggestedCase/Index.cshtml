@@ -64,6 +64,7 @@
 
                 button.addEventListener("click", async function () {
                     const userId = "@(User.FindFirst(ClaimTypes.NameIdentifier)?.Value)";
+                    const suggestedCaseId = this.dataset.id; // از data-id به عنوان suggestedCaseId استفاده می‌کنیم
                     const title = this.dataset.title;
                     const dateOnly = this.dataset.date;
 
@@ -76,18 +77,37 @@
 
                     console.log("Button clicked with the following data:");
                     console.log("UserId:", userId);
+                    console.log("SuggestedCaseId:", suggestedCaseId);
                     console.log("Title:", title);
                     console.log("DateOnly (original):", dateOnly);
                     console.log("TaskDate (converted):", taskDate);
 
-
                     try {
-                        console.log("Invoking 'AddTask' method on SignalR hub...");
-                        await connection.invoke("AddTask", userId, title, taskDate);
-                        console.log("AddTask invoked successfully.");
-                        alert("وظیفه با موفقیت ثبت شد.");
+                        // ارسال درخواست POST به متد SuggestedCase/AcceptCase/{suggestedCaseId}
+                        const response = await fetch(`/SuggestedCase/AcceptCase/${suggestedCaseId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        });
+
+                        if (response.ok) {
+                            console.log("Task accepted successfully.");
+                            // حذف سطر از جدول بعد از قبول کردن
+                            const row = this.closest("tr");
+                            row.remove();
+
+                            // اکنون متد AddTask را از طریق SignalR فراخوانی می‌کنیم
+                            await connection.invoke("AddTask", userId, title, taskDate);
+                            console.log("AddTask invoked successfully.");
+                            alert("وظیفه با موفقیت ثبت شد.");
+                        } else {
+                            const error = await response.text();
+                            console.error("Server error: ", error);
+                            alert("خطایی در قبول کردن پرونده رخ داده است.");
+                        }
                     } catch (err) {
-                        console.error("Server error during 'AddTask' invocation: ", err.toString());
+                        console.error("Error during fetch or SignalR: ", err);
                         alert("خطای سرور: " + err.message);
                     }
                 });
@@ -95,7 +115,6 @@
 
             console.log("All event listeners added successfully.");
         });
+
     </script>
-
-
 }

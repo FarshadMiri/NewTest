@@ -19,6 +19,7 @@ namespace TestWithValue.Domain.Enitities
         public TimeOnly Time { get; set; }
         public string CreatedBy { get; set; } // برای ثبت شخص ایجاد کننده (اختیاری)
         public DateTime CreatedAt { get; set; } // تاریخ ایجاد رکورد
+        public bool IsAccepted { get; set; } // فیلد جدید برای تعیین وضعیت
     }
 
 }

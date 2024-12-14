@@ -30,15 +30,15 @@ namespace TestWithValue.Data.Repository
 
         public async Task AcceptSuggestedCaseAsync(int suggestedCaseId)
         {
+            // پیدا کردن پرونده با شناسه suggestedCaseId
             var suggestedCase = await _context.tbl_SuggestedCases
                 .FirstOrDefaultAsync(x => x.SuggestedCaseId == suggestedCaseId);
 
+            // اگر پرونده پیدا شد، وضعیت IsAccepted را به true تغییر می‌دهیم
             if (suggestedCase != null)
             {
-                // تغییر وضعیت یا انجام عملیاتی به عنوان "قبول کردن"
-                // مثلا تغییر یک فیلد یا ثبت در وضعیت جدید
-                // SuggestedCase.Accepted = true; // این یک مثال است
-                _context.SaveChanges();
+                suggestedCase.IsAccepted = true; // تغییر وضعیت به قبول شده
+                await _context.SaveChangesAsync(); // ذخیره تغییرات در دیتابیس
             }
         }
     }
