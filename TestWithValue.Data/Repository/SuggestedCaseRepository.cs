@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,24 @@ namespace TestWithValue.Data.Repository
         {
             _context.tbl_SuggestedCases.AddRange(suggestedCases);
             _context.SaveChanges();
+        }
+        public async Task<List<Tbl_SuggestedCase>> GetSuggestedCasesAsync()
+        {
+            return await _context.tbl_SuggestedCases.ToListAsync();
+        }
+
+        public async Task AcceptSuggestedCaseAsync(int suggestedCaseId)
+        {
+            var suggestedCase = await _context.tbl_SuggestedCases
+                .FirstOrDefaultAsync(x => x.SuggestedCaseId == suggestedCaseId);
+
+            if (suggestedCase != null)
+            {
+                // تغییر وضعیت یا انجام عملیاتی به عنوان "قبول کردن"
+                // مثلا تغییر یک فیلد یا ثبت در وضعیت جدید
+                // SuggestedCase.Accepted = true; // این یک مثال است
+                _context.SaveChanges();
+            }
         }
     }
 }

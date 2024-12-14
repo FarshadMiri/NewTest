@@ -11,6 +11,7 @@ using TestWithValue.Domain.ViewModels.CartItem;
 using TestWithValue.Domain.ViewModels.Option;
 using TestWithValue.Domain.ViewModels.Question;
 using TestWithValue.Domain.ViewModels.Report;
+using TestWithValue.Domain.ViewModels.SuggestedCase;
 using TestWithValue.Domain.ViewModels.Task;
 using TestWithValue.Domain.ViewModels.Test;
 using TestWithValue.Domain.ViewModels.Ticket;
@@ -40,6 +41,9 @@ namespace TestWithValue.Application.profile
 
             CreateMap<Tbl_Task, TaskViewModel>().ReverseMap();
             CreateMap<Tbl_TaskMessage, TaskMessageViewModel>().ReverseMap();
+
+            CreateMap<Tbl_SuggestedCase, SuggestedCaseViewModel>().ReverseMap();
+
 
 
 

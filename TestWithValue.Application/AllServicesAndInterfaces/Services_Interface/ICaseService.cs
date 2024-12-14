@@ -16,5 +16,7 @@ namespace TestWithValue.Application.AllServicesAndInterfaces.Services_Interface
         Task<IEnumerable<CaseViewModel>> GetCasesByUserIdAsync(string userId); // اضافه شده
         Task AddCaseAsync(Tbl_Case newCase);
         (string Message, List<CaseDto> Cases) GetCasesAndSaveSuggested(string taskDate, string locationName, string createdBy);
+
+
     }
 }

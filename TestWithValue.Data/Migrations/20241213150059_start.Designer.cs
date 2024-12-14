@@ -12,7 +12,7 @@ using TestWithValue.Data;
 namespace TestWithValue.Data.Migrations
 {
     [DbContext(typeof(TestWithValueDbContext))]
-    [Migration("20241211081215_start")]
+    [Migration("20241213150059_start")]
     partial class start
     {
         /// <inheritdoc />
@@ -542,6 +542,43 @@ namespace TestWithValue.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("tbl_Requests");
+                });
+
+            modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_SuggestedCase", b =>
+                {
+                    b.Property<int>("SuggestedCaseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SuggestedCaseId"));
+
+                    b.Property<int>("CaseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CaseType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("LocationName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<TimeOnly>("Time")
+                        .HasColumnType("time");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("SuggestedCaseId");
+
+                    b.ToTable("tbl_SuggestedCases");
                 });
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Task", b =>

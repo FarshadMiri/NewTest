@@ -1,0 +1,101 @@
+﻿@using TestWithValue.Domain.ViewModels.SuggestedCase
+@using System.Security.Claims
+@model List<SuggestedCaseViewModel>
+
+@{
+    ViewData["Title"] = "پیشنهادات رسیدگی";
+}
+
+<h2 class="text-center mb-4">پیشنهادات رسیدگی</h2>
+
+<table class="table table-striped table-bordered">
+    <thead class="thead-dark">
+        <tr>
+            <th>عنوان پرونده</th>
+            <th>نوع پرونده</th>
+            <th>موقعیت مکانی</th>
+            <th>تاریخ</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var caseItem in Model)
+        {
+            <tr>
+                <td>@caseItem.Title</td>
+                <td>@caseItem.CaseType</td>
+                <td>@caseItem.LocationName</td>
+                <td>@caseItem.FormattedDate</td>
+                <td>
+                    <button class="btn btn-success btn-sm accept-task-btn"
+                            data-id="@caseItem.SuggestedCaseId"
+                            data-title="@caseItem.Title"
+                            data-date="@caseItem.Date">
+                        قبول کردن
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts{
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.12/dist/browser/signalr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+
+    <script src="https://unpkg.com/jalaali-js/dist/jalaali.js"></script>
+    <script src="https://unpkg.com/jalaali-js/dist/jalaali.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            console.log("Document fully loaded and ready.");
+
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/taskHub")
+                .build();
+
+            connection.start()
+                .then(() => console.log("SignalR connection started successfully."))
+                .catch(err => console.error("SignalR connection error: ", err.toString()));
+
+            // افزودن هندلر به تمام دکمه‌های قبول کردن
+            document.querySelectorAll(".accept-task-btn").forEach(button => {
+                console.log("Adding click event listener to button with data-id:", button.dataset.id);
+
+                button.addEventListener("click", async function () {
+                    const userId = "@(User.FindFirst(ClaimTypes.NameIdentifier)?.Value)";
+                    const title = this.dataset.title;
+                    const dateOnly = this.dataset.date;
+
+                    // تبدیل تاریخ شمسی به میلادی با jalaali.js
+                    const [day, month, year] = dateOnly.split("/"); // فرض بر اینکه تاریخ در فرمت dd/MM/yyyy است
+                    const gregorianDate = jalaali.toGregorian(parseInt(year), parseInt(month), parseInt(day));
+
+                    // ساخت یک تاریخ میلادی معتبر
+                    const taskDate = new Date(gregorianDate.gy, (gregorianDate.gm) - 1, gregorianDate.gd + 1);
+
+                    console.log("Button clicked with the following data:");
+                    console.log("UserId:", userId);
+                    console.log("Title:", title);
+                    console.log("DateOnly (original):", dateOnly);
+                    console.log("TaskDate (converted):", taskDate);
+
+
+                    try {
+                        console.log("Invoking 'AddTask' method on SignalR hub...");
+                        await connection.invoke("AddTask", userId, title, taskDate);
+                        console.log("AddTask invoked successfully.");
+                        alert("وظیفه با موفقیت ثبت شد.");
+                    } catch (err) {
+                        console.error("Server error during 'AddTask' invocation: ", err.toString());
+                        alert("خطای سرور: " + err.message);
+                    }
+                });
+            });
+
+            console.log("All event listeners added successfully.");
+        });
+    </script>
+
+
+}

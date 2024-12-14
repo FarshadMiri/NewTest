@@ -13,8 +13,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using SkiaSharp;
+using TestWithValue.Domain.ViewModels.Case;
 
 namespace TestWithValue.Web.Controllers
 {
@@ -173,19 +173,66 @@ namespace TestWithValue.Web.Controllers
             return View(model);
         }
         [HttpPost]
-        public IActionResult GetCasesByTask(string TaskDate, string LocationName)
+        public IActionResult GetCasesByTask([FromBody] GetCasesByTaskDto model)
         {
+            // بررسی ورودی‌ها
+            if (string.IsNullOrWhiteSpace(model.TaskDate) || string.IsNullOrWhiteSpace(model.LocationName))
+            {
+                return BadRequest(new
+                {
+                    Message = "تاریخ یا موقعیت مکانی ارسال نشده است."
+                });
+            }
+
             string createdBy = User.Identity?.Name;
 
-            // استفاده از سرویس
-            var result = _caseService.GetCasesAndSaveSuggested(TaskDate, LocationName, createdBy);
-
-            // بازگشت پیام و داده‌ها
-            return Json(new
+            try
             {
-                Message = result.Message,
-                Cases = result.Cases // اینجا از DTO استفاده می‌شود
-            });
+                // تبدیل اعداد فارسی به لاتین
+                string taskDate = ConvertPersianNumbersToEnglish(model.TaskDate);
+
+                // تبدیل تاریخ شمسی به میلادی
+              
+                // استفاده از سرویس برای دریافت داده‌ها
+                var result = _caseService.GetCasesAndSaveSuggested(taskDate, model.LocationName, createdBy);
+
+                // بررسی نتیجه سرویس
+                if (result.Cases == null)
+                {
+                    return NotFound(new
+                    {
+                        Message = "هیچ پرونده‌ای یافت نشد."
+                    });
+                }
+
+                // بازگشت داده‌ها
+                return Json(new
+                {
+                    Message = result.Message ?? "عملیات با موفقیت انجام شد.",
+                    Cases = result.Cases // اینجا از DTO استفاده می‌شود
+                });
+            }
+            catch (Exception ex)
+            {
+                // مدیریت خطا
+                return StatusCode(500, new
+                {
+                    Message = "خطایی در پردازش درخواست رخ داد.",
+                    Error = ex.Message
+                });
+            }
+        }
+        string ConvertPersianNumbersToEnglish(string input)
+        {
+            var persianDigits = new[] { '۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹' };
+            var englishDigits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+
+            for (int i = 0; i < 10; i++)
+            {
+                input = input.Replace(persianDigits[i], englishDigits[i]);
+            }
+
+            return input;
         }
 
         [HttpPost]
