@@ -2,7 +2,7 @@
 @using Newtonsoft.Json
 @using TestWithValue.Domain.OperationResult
 @inject SignInManager<IdentityUser> SignInManager
-
+@inject UserManager<IdentityUser> UserManager
 <!DOCTYPE html>
 <html dir="rtl" lang="fa">
 <head>
@@ -12,6 +12,34 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/TestWithValue.Web.styles.css" asp-append-version="true" />
+    <style>
+        /* استایل برای منوی کشویی از سمت راست */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            right: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: #f8f9fa;
+            transition: right 0.3s ease-in-out;
+            z-index: 1000;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+            #sidebar.open {
+                right: 0;
+            }
+
+            #sidebar .nav-link {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+
+            #sidebar .nav-item {
+                list-style: none;
+                margin: 10px 0;
+            }
+    </style>
 </head>
 <body>
     <header>
@@ -32,34 +60,8 @@
                                 </form>
                             </li>
                             <li class="nav-item ml-auto">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="UserInfo">درخواست نامه </a>
+                                <a class="nav-link text-dark" href="javascript:void(0);" onclick="toggleSidebar()">پنل کاربری</a>
                             </li>
-                            <li class="nav-item ml-auto">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Task" asp-action="ShowRequest">پیگیری در خواست </a>
-                            </li>
-
-                            <li class="nav-item ml-auto">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Case" asp-action="Create">تشکیل پرونده  </a>
-                            </li>
-                            <li class="nav-item ml-auto">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Case" asp-action="UserCases">لیست پرونده ها  </a>
-                            </li>
-
-
-                            @if (User.IsInRole("Agent"))
-                            {
-                                <li class="nav-item ml-auto">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Chat" asp-action="SupportRequests">درخواست‌های پشتیبان</a>
-                                </li>
-                                <li class="nav-item ml-auto">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Task" asp-action="SupportTask">تعریف وظیفه</a>
-                                </li>
-                                <li class="nav-item ml-auto">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="SuggestedCase" asp-action="Index">لیست پرونده‌های پیشنهاد </a>
-                                </li>
-
-                            }
-
                         }
                         else
                         {
@@ -69,38 +71,67 @@
                             <li class="nav-item ml-auto">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="Register">ثبت نام</a>
                             </li>
-                           
-
                         }
-                    </ul>
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Quiz" asp-action="Start">Quiz</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Cart" asp-action="ShowCart">نمایش سبد خرید</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Auth" asp-action="CompleteUserInfo"> تکمیل اطلاعات تکمیلی </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Chat" asp-action="Tasks">وظایف </a>
-                        </li>
-
-                        
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
+
+    <!-- منوی کشویی -->
+    <div id="sidebar">
+        <ul class="nav flex-column">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                var user = await UserManager.GetUserAsync(User);
+                var userRoles = await UserManager.GetRolesAsync(user);
+
+                if (userRoles.Contains("User"))
+                {
+                    <!-- منوی مخصوص User -->
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="CompleteInfo">‌تکمیل اطلاعات تکمیلی</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="SupportChat">چت با پشتیبانی</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="RequestForm">درخواست‌نامه</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="RequestTracking">پیگیری درخواست‌ها</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="CreateFile">تشکیل پرونده</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="FileList">لیست پرونده‌ها</a>
+                    </li>
+                }
+                else if (userRoles.Contains("Agent"))
+                {
+                    <!-- منوی مخصوص Agent -->
+@*                     <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="AgentDashboard">داشبورد پشتیبان</a>
+                    </li>
+ *@                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="RequestForm">درخواست‌های پشتیبان</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="DefineTask">تعریف وظیفه</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="SuggestedFileList">لیست پرونده‌های پیشنهاد</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="TasksList">وظایف</a>
+                    </li>
+                }
+            }
+        </ul>
+    </div>
+
     <div class="container body-content">
-        <!-- نمایش پیام‌های TempData -->
         @if (TempData["OperationResult"] != null)
         {
             var operationResult = JsonConvert.DeserializeObject<OperationResult>(TempData["OperationResult"].ToString());
@@ -110,7 +141,6 @@
             </div>
         }
 
-        <!-- اینجا محتوای صفحه قرار می‌گیرد -->
         @RenderBody()
     </div>
 
@@ -119,22 +149,16 @@
             &copy; 1403 - TestWithValue.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/quiz.js"></script>
     <script>
-        // بعد از بارگذاری صفحه پیام TempData را مخفی کن
-        window.onload = function () {
-            var message = document.getElementById("operationMessage");
-            if (message) {
-                setTimeout(function () {
-                    message.style.display = "none";
-                }, 2000); // بعد از 2 ثانیه مخفی می‌شود
-            }
-        };
+        // باز و بسته کردن منو کشویی
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

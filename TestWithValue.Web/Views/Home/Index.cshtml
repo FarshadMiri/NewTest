@@ -2,7 +2,6 @@
 @using System.Security.Claims
 @using TestWithValue.Domain.ViewModels.Ticket
 @{
-    var isLoggedIn = TempData["isLoggedIn"] != null && (bool)TempData["isLoggedIn"];
     var role = TempData["role"]?.ToString();
 }
 @{
@@ -12,8 +11,8 @@
 <div>
     <h1>خوش آمدید!</h1>
 
-    @if (isLoggedIn)
-    {
+    
+    
         @if (Model.Any())
         {
             <h2>لیست تیکت‌های شما</h2>
@@ -61,15 +60,8 @@
                  <button type="submit">ارسال فایل</button>
             </form>
         </div>
-    }
-    else if (!isLoggedIn)
-    {
-        <p>برای چت با پشتیبانی وارد حساب کاربری خود شوید.</p>
-    }
-    else if (role == "Agent")
-    {
-        <p>شما به عنوان پشتیبان وارد شده‌اید. برای چت به صفحه پشتیبانی بروید.</p>
-    }
+    
+  
 </div>
 
 @section Scripts {
