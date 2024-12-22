@@ -104,7 +104,8 @@ namespace TestWithValue.Data.Migrations
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
                     Time = table.Column<TimeOnly>(type: "time", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsAccepted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -444,6 +445,36 @@ namespace TestWithValue.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "tbl_Contracts",
+                columns: table => new
+                {
+                    ContractId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CaseId = table.Column<int>(type: "int", nullable: false),
+                    ContractTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ContractDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    UserConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tbl_Contracts", x => x.ContractId);
+                    table.ForeignKey(
+                        name: "FK_tbl_Contracts_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_tbl_Contracts_tbl_Cases_CaseId",
+                        column: x => x.CaseId,
+                        principalTable: "tbl_Cases",
+                        principalColumn: "CaseId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "tbl_TaskMessages",
                 columns: table => new
                 {
@@ -716,6 +747,16 @@ namespace TestWithValue.Data.Migrations
                 column: "ProvinceId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_tbl_Contracts_CaseId",
+                table: "tbl_Contracts",
+                column: "CaseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tbl_Contracts_UserId",
+                table: "tbl_Contracts",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_tbl_Options_QuestionId",
                 table: "tbl_Options",
                 column: "QuestionId");
@@ -806,10 +847,10 @@ namespace TestWithValue.Data.Migrations
                 name: "tbl_CartItems");
 
             migrationBuilder.DropTable(
-                name: "tbl_Cases");
+                name: "tbl_Cities");
 
             migrationBuilder.DropTable(
-                name: "tbl_Cities");
+                name: "tbl_Contracts");
 
             migrationBuilder.DropTable(
                 name: "tbl_Organizations");
@@ -846,6 +887,9 @@ namespace TestWithValue.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "tbl_Provinces");
+
+            migrationBuilder.DropTable(
+                name: "tbl_Cases");
 
             migrationBuilder.DropTable(
                 name: "tbl_Tickets");

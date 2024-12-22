@@ -79,8 +79,14 @@ namespace TestWithValue.Web.Controllers
         [Authorize(Roles = "User")]
         public IActionResult FileList()
         {
-            return RedirectToAction("UserCases","Case");
+            return RedirectToAction("UserCases", "Case");
         }
+        [Authorize(Roles = "User")]
+        public IActionResult Contract()
+        {
+            return RedirectToAction("UserContracts", "Case");
+        }
+
 
         // متدهای مربوط به داشبورد پشتیبان - فقط برای نقش "Agent"
         [Authorize(Roles = "Agent")]

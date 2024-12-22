@@ -99,6 +99,10 @@ namespace TestWithValue.Infrastructure.IOC
             services.AddScoped<ISuggestedCaseRepository, SuggestedCaseRepository>();
             services.AddScoped<ISuggestedCaseService, SuggestedCaseService>();
 
+            services.AddScoped<IContractRepository, ContractRepository>();
+            services.AddScoped<IContractService, ContractService>();
+
+
 
 
 

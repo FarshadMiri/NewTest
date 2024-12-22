@@ -1,0 +1,54 @@
+﻿@using TestWithValue.Domain.Enitities
+@model Tbl_Contract
+
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow-lg" style="width: 50rem;">
+        <div class="card-header bg-primary text-white text-center">
+            <h2>قرارداد: @Model.ContractTitle</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>نام کاربر:</strong> @Model.FullName</p>
+            <p><strong>تاریخ ایجاد قرارداد:</strong> @Model.ContractDate.ToString("yyyy/MM/dd HH:mm")</p>
+
+            <hr />
+
+            <p class="mb-4">
+                <strong>جزئیات قرارداد:</strong>
+                <br />
+                این یک قرارداد بین <span class="text-primary">@Model.FullName</span> و پشتیبان است.
+                <br />
+                تاریخ قرارداد: <span class="text-secondary">@Model.ContractDate.ToString("dddd, dd MMMM yyyy")</span>
+            </p>
+
+            @if (Model.Status == ContractStatus.PendingUserApproval)
+            {
+                <form method="post" asp-action="ConfirmContractByUser" asp-route-contractId="@Model.ContractId">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="UserConfirmed" name="UserConfirmed" />
+                        <label class="form-check-label" for="UserConfirmed">
+                            تایید قرارداد توسط کاربر
+                        </label>
+                    </div>
+                    <button class="btn btn-success btn-block" type="submit">تایید قرارداد</button>
+                </form>
+            }
+
+            <hr />
+
+            <p>
+                <strong>وضعیت قرارداد:</strong>
+                @switch (Model.Status)
+                {
+                    case ContractStatus.PendingUserApproval:
+                        <span class="badge bg-warning text-dark">در انتظار تایید کاربر</span>
+                        ;
+                        break;
+                    case ContractStatus.Approved:
+                        <span class="badge bg-success">تایید شده</span>
+                        ;
+                        break;
+                }
+            </p>
+        </div>
+    </div>
+</div>

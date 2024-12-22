@@ -12,7 +12,7 @@ using TestWithValue.Data;
 namespace TestWithValue.Data.Migrations
 {
     [DbContext(typeof(TestWithValueDbContext))]
-    [Migration("20241214111432_start")]
+    [Migration("20241218151008_start")]
     partial class start
     {
         /// <inheritdoc />
@@ -346,6 +346,44 @@ namespace TestWithValue.Data.Migrations
                     b.ToTable("tbl_Cities");
                 });
 
+            modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Contract", b =>
+                {
+                    b.Property<int>("ContractId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ContractId"));
+
+                    b.Property<int>("CaseId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ContractDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ContractTitle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("UserConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ContractId");
+
+                    b.HasIndex("CaseId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("tbl_Contracts");
+                });
+
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Location", b =>
                 {
                     b.Property<int>("LocationId")
@@ -566,6 +604,9 @@ namespace TestWithValue.Data.Migrations
 
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
+
+                    b.Property<bool>("IsAccepted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("LocationName")
                         .HasColumnType("nvarchar(max)");
@@ -972,6 +1013,23 @@ namespace TestWithValue.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("province");
+                });
+
+            modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Contract", b =>
+                {
+                    b.HasOne("TestWithValue.Domain.Enitities.Tbl_Case", "Case")
+                        .WithMany()
+                        .HasForeignKey("CaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Case");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Option", b =>
