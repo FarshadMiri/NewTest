@@ -9,6 +9,7 @@ namespace TestWithValue.Application.Contract.Persistence
 {
     public interface IUserRepository
     {
-        Task<IEnumerable<IdentityUser>> GetAllUsersAsync(); // داده‌ها به صورت IdentityUser بازگشت می‌شوند
+        Task<IEnumerable<IdentityUser>> GetAllUsersAsync();
+        Task<IdentityUser> GetUserByIdAsync(string userId);
     }
 }

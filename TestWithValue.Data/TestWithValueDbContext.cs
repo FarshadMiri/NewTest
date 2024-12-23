@@ -39,7 +39,13 @@ namespace TestWithValue.Data
         public DbSet<Tbl_Case>  tbl_Cases { get; set; }
         public DbSet<Tbl_Location> tbl_Locations { get; set; }
         public DbSet<Tbl_SuggestedCase> tbl_SuggestedCases { get; set; }
-        public DbSet<Tbl_Contract>  tbl_Contracts { get; set; }
+        public DbSet<Tbl_Contract> tbl_Contracts { get; set; }
+        public DbSet<Tbl_PartyContract>  tbl_PartyContracts { get; set; }
+        public DbSet<Tbl_ContractClause>  tbl_ContractClauses { get; set; }
+        public DbSet<Tbl_ContractClauseMapping> tbl_ContractClauseMappings { get; set; }
+        public DbSet<Tbl_ContractTitle>  tbl_ContractTitles { get; set; }
+
+
 
 
 
@@ -66,17 +72,65 @@ new Tbl_Location { LocationId = 8, Name = "شعبه دادگاه قم" },
 new Tbl_Location { LocationId = 9, Name = "شعبه دادگاه رشت" },
 new Tbl_Location { LocationId = 10, Name = "شعبه دادگاه یزد" }
 );
-
+            modelBuilder.Entity<Tbl_ContractClause>().HasData(
+       new Tbl_ContractClause { ClauseId = 1, ClauseText = "بند 1: این قرارداد تحت قوانین جمهوری اسلامی ایران تنظیم شده است." },
+       new Tbl_ContractClause { ClauseId = 2, ClauseText = "بند 2: طرفین موظف به حفظ اطلاعات محرمانه هستند." },
+       new Tbl_ContractClause { ClauseId = 3, ClauseText = "بند 3: مدت قرارداد از تاریخ امضا به مدت یک سال معتبر است." },
+       new Tbl_ContractClause { ClauseId = 4, ClauseText = "بند 4: کلیه اختلافات از طریق داوری حل می‌شود." },
+       new Tbl_ContractClause { ClauseId = 5, ClauseText = "بند 5: تمامی پرداخت‌ها به صورت ریالی انجام خواهد شد." },
+       new Tbl_ContractClause { ClauseId = 6, ClauseText = "بند 6: در صورت بروز اختلاف، حکمیت به وکیل تعیین شده واگذار می‌شود." },
+       new Tbl_ContractClause { ClauseId = 7, ClauseText = "بند 7: هر گونه تخلف منجر به فسخ قرارداد خواهد شد." },
+       new Tbl_ContractClause { ClauseId = 8, ClauseText = "بند 8: طرفین توافق دارند از امکانات سامانه الکترونیکی استفاده کنند." },
+       new Tbl_ContractClause { ClauseId = 9, ClauseText = "بند 9: حق تغییر در بندهای قرارداد با توافق طرفین امکان‌پذیر است." },
+       new Tbl_ContractClause { ClauseId = 10, ClauseText = "بند 10: جریمه تخلف معادل 10 درصد ارزش قرارداد خواهد بود." },
+       new Tbl_ContractClause { ClauseId = 11, ClauseText = "بند 11: قرارداد فقط با امضای هر دو طرف معتبر است." },
+       new Tbl_ContractClause { ClauseId = 12, ClauseText = "بند 12: خدمات پشتیبانی شامل هزینه جداگانه خواهد بود." },
+       new Tbl_ContractClause { ClauseId = 13, ClauseText = "بند 13: قرارداد باید در بازه زمانی توافق شده اجرا شود." },
+       new Tbl_ContractClause { ClauseId = 14, ClauseText = "بند 14: اطلاعات طرفین باید به صورت دقیق در سامانه وارد شود." },
+       new Tbl_ContractClause { ClauseId = 15, ClauseText = "بند 15: تعهدات مالی باید ظرف مدت 30 روز تسویه شود." },
+       new Tbl_ContractClause { ClauseId = 16, ClauseText = "بند 16: طرفین متعهد به رعایت الزامات محیط زیستی هستند." },
+       new Tbl_ContractClause { ClauseId = 17, ClauseText = "بند 17: تغییرات در قرارداد باید مکتوب و امضا شود." },
+       new Tbl_ContractClause { ClauseId = 18, ClauseText = "بند 18: قرارداد شامل مالیات بر ارزش افزوده می‌باشد." },
+       new Tbl_ContractClause { ClauseId = 19, ClauseText = "بند 19: در صورت بروز قوه قهریه، قرارداد به تعلیق در می‌آید." },
+       new Tbl_ContractClause { ClauseId = 20, ClauseText = "بند 20: هر گونه استفاده تجاری بدون مجوز ممنوع است." }
+   );
+            modelBuilder.Entity<Tbl_ContractTitle>().HasData(
+    new Tbl_ContractTitle { TitleId = 1, TitleName = "قرارداد خدمات" },
+    new Tbl_ContractTitle { TitleId = 2, TitleName = "قرارداد عدم افشاء (NDA)" },
+    new Tbl_ContractTitle { TitleId = 3, TitleName = "قرارداد محرمانگی" },
+    new Tbl_ContractTitle { TitleId = 4, TitleName = "قرارداد مشارکت" },
+    new Tbl_ContractTitle { TitleId = 5, TitleName = "قرارداد استخدام" },
+    new Tbl_ContractTitle { TitleId = 6, TitleName = "قرارداد اجاره" },
+    new Tbl_ContractTitle { TitleId = 7, TitleName = "قرارداد فروش" },
+    new Tbl_ContractTitle { TitleId = 8, TitleName = "قرارداد وام" },
+    new Tbl_ContractTitle { TitleId = 9, TitleName = "قرارداد تسویه" },
+    new Tbl_ContractTitle { TitleId = 10, TitleName = "قرارداد مجوز" }
+);
 
             modelBuilder.Entity<Tbl_Answer>()
                 .HasKey(a => a.AnswerId);
-                     
+
             modelBuilder.Entity<Tbl_Answer>()
              .HasOne(a => a.Question)
            .WithOne(o => o.Answer)
             .HasForeignKey<Tbl_Answer>(a => a.QuestionId)  // کلید خارجی به Tbl_Answer اشاره می‌کند
              .OnDelete(DeleteBehavior.Restrict);
-           
+
+            modelBuilder.Entity<Tbl_ContractClauseMapping>()
+       .HasKey(mapping => new { mapping.ContractId, mapping.ClauseId });
+
+            // رابطه بین Tbl_PartyContract و Tbl_ContractClauseMapping
+            modelBuilder.Entity<Tbl_ContractClauseMapping>()
+                .HasOne(mapping => mapping.Contract)
+                .WithMany(contract => contract.ContractClauseMappings)
+                .HasForeignKey(mapping => mapping.ContractId);
+
+            // رابطه بین Tbl_ContractClause و Tbl_ContractClauseMapping
+            modelBuilder.Entity<Tbl_ContractClauseMapping>()
+                .HasOne(mapping => mapping.Clause)
+                .WithMany(clause => clause.ContractClauseMappings)
+                .HasForeignKey(mapping => mapping.ClauseId);
+
             modelBuilder.Entity<Tbl_Option>()
         .HasOne(o => o.Test)
         .WithMany(t => t.Options)

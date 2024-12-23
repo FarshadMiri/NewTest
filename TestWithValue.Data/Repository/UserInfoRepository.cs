@@ -33,6 +33,10 @@ namespace TestWithValue.Data.Repository
             }
         }
 
+        public async Task<IEnumerable<Tbl_UserInfo>> GetAllUserInfosAsync()
+        {
+            return await _context.tbl_UserInfos.ToListAsync();
+        }
         public async Task<Tbl_UserInfo> GetUserInfoByUserIdAsync(string userId)
         {
             return await _context.tbl_UserInfos.FirstOrDefaultAsync(u => u.UserId == userId);

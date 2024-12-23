@@ -7,10 +7,9 @@ using TestWithValue.Domain.Enitities;
 
 namespace TestWithValue.Application.Contract.Persistence
 {
-    public interface IUserInfoRepository
+    public interface IContractClauseMappingRepository
     {
-        Task AddUserInfoAsync(Tbl_UserInfo userInfo);
-        Task<Tbl_UserInfo> GetUserInfoByUserIdAsync(string userId);
-        Task<IEnumerable<Tbl_UserInfo>> GetAllUserInfosAsync();
+        Task AddAsync(Tbl_ContractClauseMapping mapping);
+        Task SaveChangesAsync();
     }
 }

@@ -102,6 +102,21 @@ namespace TestWithValue.Infrastructure.IOC
             services.AddScoped<IContractRepository, ContractRepository>();
             services.AddScoped<IContractService, ContractService>();
 
+            services.AddScoped<IContractClauseRepository, ContractClauseRepository>();
+
+            services.AddScoped<IPartyContractRepository, PartyContractRepository>();
+            services.AddScoped<IPartyContractService, PartyContractService>();
+
+            services.AddScoped<IContractTitleRepository, ContractTitleRepository>();
+
+            services.AddScoped<IContractClauseMappingRepository, ContractClauseMappingRepository>();
+
+
+
+
+
+
+
 
 
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TestWithValue.Data;
 
@@ -11,9 +12,11 @@ using TestWithValue.Data;
 namespace TestWithValue.Data.Migrations
 {
     [DbContext(typeof(TestWithValueDbContext))]
-    partial class TestWithValueDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241223093601_adddatatitblcontractcluse")]
+    partial class adddatatitblcontractcluse
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -528,58 +531,6 @@ namespace TestWithValue.Data.Migrations
                     b.HasKey("TitleId");
 
                     b.ToTable("tbl_ContractTitles");
-
-                    b.HasData(
-                        new
-                        {
-                            TitleId = 1,
-                            TitleName = "قرارداد خدمات"
-                        },
-                        new
-                        {
-                            TitleId = 2,
-                            TitleName = "قرارداد عدم افشاء (NDA)"
-                        },
-                        new
-                        {
-                            TitleId = 3,
-                            TitleName = "قرارداد محرمانگی"
-                        },
-                        new
-                        {
-                            TitleId = 4,
-                            TitleName = "قرارداد مشارکت"
-                        },
-                        new
-                        {
-                            TitleId = 5,
-                            TitleName = "قرارداد استخدام"
-                        },
-                        new
-                        {
-                            TitleId = 6,
-                            TitleName = "قرارداد اجاره"
-                        },
-                        new
-                        {
-                            TitleId = 7,
-                            TitleName = "قرارداد فروش"
-                        },
-                        new
-                        {
-                            TitleId = 8,
-                            TitleName = "قرارداد وام"
-                        },
-                        new
-                        {
-                            TitleId = 9,
-                            TitleName = "قرارداد تسویه"
-                        },
-                        new
-                        {
-                            TitleId = 10,
-                            TitleName = "قرارداد مجوز"
-                        });
                 });
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Location", b =>

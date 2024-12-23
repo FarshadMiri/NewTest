@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TestWithValue.Data;
 
@@ -11,9 +12,11 @@ using TestWithValue.Data;
 namespace TestWithValue.Data.Migrations
 {
     [DbContext(typeof(TestWithValueDbContext))]
-    partial class TestWithValueDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241223091555_addpartycontract")]
+    partial class addpartycontract
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -395,108 +398,6 @@ namespace TestWithValue.Data.Migrations
                     b.HasKey("ClauseId");
 
                     b.ToTable("tbl_ContractClauses");
-
-                    b.HasData(
-                        new
-                        {
-                            ClauseId = 1,
-                            ClauseText = "بند 1: این قرارداد تحت قوانین جمهوری اسلامی ایران تنظیم شده است."
-                        },
-                        new
-                        {
-                            ClauseId = 2,
-                            ClauseText = "بند 2: طرفین موظف به حفظ اطلاعات محرمانه هستند."
-                        },
-                        new
-                        {
-                            ClauseId = 3,
-                            ClauseText = "بند 3: مدت قرارداد از تاریخ امضا به مدت یک سال معتبر است."
-                        },
-                        new
-                        {
-                            ClauseId = 4,
-                            ClauseText = "بند 4: کلیه اختلافات از طریق داوری حل می‌شود."
-                        },
-                        new
-                        {
-                            ClauseId = 5,
-                            ClauseText = "بند 5: تمامی پرداخت‌ها به صورت ریالی انجام خواهد شد."
-                        },
-                        new
-                        {
-                            ClauseId = 6,
-                            ClauseText = "بند 6: در صورت بروز اختلاف، حکمیت به وکیل تعیین شده واگذار می‌شود."
-                        },
-                        new
-                        {
-                            ClauseId = 7,
-                            ClauseText = "بند 7: هر گونه تخلف منجر به فسخ قرارداد خواهد شد."
-                        },
-                        new
-                        {
-                            ClauseId = 8,
-                            ClauseText = "بند 8: طرفین توافق دارند از امکانات سامانه الکترونیکی استفاده کنند."
-                        },
-                        new
-                        {
-                            ClauseId = 9,
-                            ClauseText = "بند 9: حق تغییر در بندهای قرارداد با توافق طرفین امکان‌پذیر است."
-                        },
-                        new
-                        {
-                            ClauseId = 10,
-                            ClauseText = "بند 10: جریمه تخلف معادل 10 درصد ارزش قرارداد خواهد بود."
-                        },
-                        new
-                        {
-                            ClauseId = 11,
-                            ClauseText = "بند 11: قرارداد فقط با امضای هر دو طرف معتبر است."
-                        },
-                        new
-                        {
-                            ClauseId = 12,
-                            ClauseText = "بند 12: خدمات پشتیبانی شامل هزینه جداگانه خواهد بود."
-                        },
-                        new
-                        {
-                            ClauseId = 13,
-                            ClauseText = "بند 13: قرارداد باید در بازه زمانی توافق شده اجرا شود."
-                        },
-                        new
-                        {
-                            ClauseId = 14,
-                            ClauseText = "بند 14: اطلاعات طرفین باید به صورت دقیق در سامانه وارد شود."
-                        },
-                        new
-                        {
-                            ClauseId = 15,
-                            ClauseText = "بند 15: تعهدات مالی باید ظرف مدت 30 روز تسویه شود."
-                        },
-                        new
-                        {
-                            ClauseId = 16,
-                            ClauseText = "بند 16: طرفین متعهد به رعایت الزامات محیط زیستی هستند."
-                        },
-                        new
-                        {
-                            ClauseId = 17,
-                            ClauseText = "بند 17: تغییرات در قرارداد باید مکتوب و امضا شود."
-                        },
-                        new
-                        {
-                            ClauseId = 18,
-                            ClauseText = "بند 18: قرارداد شامل مالیات بر ارزش افزوده می‌باشد."
-                        },
-                        new
-                        {
-                            ClauseId = 19,
-                            ClauseText = "بند 19: در صورت بروز قوه قهریه، قرارداد به تعلیق در می‌آید."
-                        },
-                        new
-                        {
-                            ClauseId = 20,
-                            ClauseText = "بند 20: هر گونه استفاده تجاری بدون مجوز ممنوع است."
-                        });
                 });
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_ContractClauseMapping", b =>
@@ -528,58 +429,6 @@ namespace TestWithValue.Data.Migrations
                     b.HasKey("TitleId");
 
                     b.ToTable("tbl_ContractTitles");
-
-                    b.HasData(
-                        new
-                        {
-                            TitleId = 1,
-                            TitleName = "قرارداد خدمات"
-                        },
-                        new
-                        {
-                            TitleId = 2,
-                            TitleName = "قرارداد عدم افشاء (NDA)"
-                        },
-                        new
-                        {
-                            TitleId = 3,
-                            TitleName = "قرارداد محرمانگی"
-                        },
-                        new
-                        {
-                            TitleId = 4,
-                            TitleName = "قرارداد مشارکت"
-                        },
-                        new
-                        {
-                            TitleId = 5,
-                            TitleName = "قرارداد استخدام"
-                        },
-                        new
-                        {
-                            TitleId = 6,
-                            TitleName = "قرارداد اجاره"
-                        },
-                        new
-                        {
-                            TitleId = 7,
-                            TitleName = "قرارداد فروش"
-                        },
-                        new
-                        {
-                            TitleId = 8,
-                            TitleName = "قرارداد وام"
-                        },
-                        new
-                        {
-                            TitleId = 9,
-                            TitleName = "قرارداد تسویه"
-                        },
-                        new
-                        {
-                            TitleId = 10,
-                            TitleName = "قرارداد مجوز"
-                        });
                 });
 
             modelBuilder.Entity("TestWithValue.Domain.Enitities.Tbl_Location", b =>

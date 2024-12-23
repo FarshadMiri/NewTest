@@ -22,5 +22,10 @@ namespace TestWithValue.Data.Repository
         {
             return await _userManager.Users.ToListAsync(); // برگرداندن کاربران به صورت List<IdentityUser>
         }
+
+        public async Task<IdentityUser> GetUserByIdAsync(string userId)
+        {
+            return await _userManager.FindByIdAsync(userId);
+        }
     }
 }
