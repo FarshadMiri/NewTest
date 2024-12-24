@@ -56,5 +56,28 @@ namespace TestWithValue.Data.Repository
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<Tbl_PartyContract> GetContractWithClausesAsync(int contractId)
+        {
+            return await _context.tbl_PartyContracts
+                                 .Include(c => c.ContractClauseMappings)
+                                     .ThenInclude(mapping => mapping.Clause) // بارگذاری بندهای قرارداد
+                                 .FirstOrDefaultAsync(c => c.ContractId == contractId);
+        }
+        public async Task<IEnumerable<Tbl_PartyContract>> GetContractsForUserAsync(string userId)
+        {
+            return await _context.tbl_PartyContracts
+                .Where(c => c.PartyOneId == userId || c.PartyTwoId == userId)
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<Tbl_PartyContract>> GetContractsByStatusAsync(string status)
+        {
+            return await _context.tbl_PartyContracts
+                .Where(c => c.Status == status)
+                .ToListAsync();
+        }
+
+
+
     }
 }

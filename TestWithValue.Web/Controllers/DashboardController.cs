@@ -47,7 +47,11 @@ namespace TestWithValue.Web.Controllers
         {
             return RedirectToAction("Index", "Home"); // صفحه چت که در HomeController متد Index دارد
         }
-        [Authorize(Roles = "User")]
+        public IActionResult PartyContracts()
+        {
+            return RedirectToAction("UserContracts", "Contract"); // صفحه چت که در HomeController متد Index دارد
+        }
+
         public IActionResult CompleteInfo()
         {
             return RedirectToAction("CompleteUserInfo", "Auth"); // صفحه چت که در HomeController متد Index دارد

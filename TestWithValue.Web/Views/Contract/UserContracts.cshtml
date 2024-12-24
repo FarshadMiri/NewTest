@@ -1,0 +1,28 @@
+﻿@using TestWithValue.Domain.ViewModels.Contract
+@model IEnumerable<ContractListViewModel>
+
+<table>
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Party One</th>
+            <th>Party Two</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var contract in Model)
+        {
+            <tr>
+                <td>@contract.Title</td>
+                <td>@contract.PartyOneName</td>
+                <td>@contract.PartyTwoName</td>
+                <td>@contract.Status</td>
+                <td><a href="@Url.Action("UserContractDetails", new { contractId = contract.ContractId })">Details</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+

@@ -1,0 +1,101 @@
+﻿@using TestWithValue.Domain.ViewModels.Contract
+@model ContractDetailsViewModel
+
+@* افزودن استایل‌های Bootstrap *@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<div class="container my-5">
+    <h2 class="text-center mb-4" style="font-size: 2rem; font-weight: bold;">جزئیات قرارداد: @Model.Title</h2>
+
+    <div class="card shadow-lg border-light">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><strong>تاریخ قرارداد:</strong> @Model.ContractDate.ToString("yyyy/MM/dd")</p>
+                </div>
+                <div class="col-md-6 text-md-right">
+                    <p><strong>شماره قرارداد:</strong> @Model.ContractId</p>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><strong>طرف اول:</strong> @Model.PartyOneName</p>
+                </div>
+                <div class="col-md-6 text-md-right">
+                    <p><strong>طرف دوم:</strong> @Model.PartyTwoName</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <h3 class="text-primary mb-3" style="font-size: 1.5rem; font-weight: 600;">بندهای قرارداد:</h3>
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>ردیف</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var clause in Model.Clauses)
+                {
+                    <tr>
+                        <td>@clause.ClauseText</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @* اضافه کردن دکمه برگشت به لیست قراردادها *@
+    <div class="mt-4 text-center">
+        <a href="@Url.Action("Index", "Contract")" class="btn btn-secondary btn-lg">
+            <i class="fas fa-arrow-left"></i> بازگشت به لیست قراردادها
+        </a>
+    </div>
+</div>
+
+@* افزودن استایل‌های برای زیبایی بیشتر *@
+@section Styles {
+    <style>
+        h2, h3 {
+            color: #2c3e50;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .card-body p {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+        }
+
+        .table th, .table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .table-striped tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+
+        .btn-secondary {
+            font-size: 1.2rem;
+            padding: 10px 20px;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .table th {
+            background-color: #34495e;
+            color: #ffffff;
+        }
+
+        .table td {
+            font-size: 1.1rem;
+            color: #555;
+        }
+    </style>
+}

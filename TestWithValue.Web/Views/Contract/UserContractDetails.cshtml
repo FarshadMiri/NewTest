@@ -1,0 +1,31 @@
+﻿@using TestWithValue.Domain.ViewModels.Contract
+@model ContractDetailsViewModel
+
+
+@{
+    ViewData["Title"] = "UserContractDetails";
+}
+
+<h1>UserContractDetails</h1>
+
+<h2>Contract Details</h2>
+<p>Title: @Model.Title</p>
+<p>Party One: @Model.PartyOneName</p>
+<p>Party Two: @Model.PartyTwoName</p>
+<p>Status: @Model.UserStatus</p>
+
+<h3>Clauses</h3>
+<ul>
+    @foreach (var clause in Model.Clauses)
+    {
+        <li>@clause.ClauseText</li>
+    }
+</ul>
+
+<form asp-action="ApproveOrRejectContract" method="post">
+    <input type="hidden" name="contractId" value="@Model.ContractId" />
+    <button type="submit" name="action" value="approve">Approve</button>
+    <button type="submit" name="action" value="reject">Reject</button>
+</form>
+
+

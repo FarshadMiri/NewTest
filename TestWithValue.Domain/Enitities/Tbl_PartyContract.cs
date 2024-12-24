@@ -12,7 +12,8 @@ namespace TestWithValue.Domain.Enitities
     {
         [Key]
         public int ContractId { get; set; }          // شناسه منحصر به فرد قرارداد
-        public int TitleId { get; set; }            // شناسه عنوان قرارداد
+        public int TitleId { get; set; }         // شناسه عنوان قرارداد
+        public string TitleName {  get; set; }
         public string PartyOneId { get; set; }      // شناسه طرف اول قرارداد (کاربر)
         public string PartyTwoId { get; set; }      // شناسه طرف دوم قرارداد (کاربر یا وکیل)
         public string PartyOneName { get; set; }    // نام طرف اول قرارداد

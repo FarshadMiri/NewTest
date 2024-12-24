@@ -10,9 +10,12 @@ namespace TestWithValue.Application.Contract.Persistence
     public interface IPartyContractRepository
     {
         Task<Tbl_PartyContract> GetContractByIdAsync(int contractId);
+        Task<Tbl_PartyContract> GetContractWithClausesAsync(int contractId);
         Task<IEnumerable<Tbl_PartyContract>> GetAllContractsAsync();
         Task AddContractAsync(Tbl_PartyContract contract);
         Task UpdateContractAsync(Tbl_PartyContract contract);
         Task DeleteContractAsync(int contractId);
+        Task<IEnumerable<Tbl_PartyContract>> GetContractsForUserAsync(string userId);
+        Task<IEnumerable<Tbl_PartyContract>> GetContractsByStatusAsync(string status);
     }
 }

@@ -35,7 +35,7 @@ public class PartyContractService : IPartyContractService
         var model = new ContractCreateViewModel
         {
             ContractTitles = (await _contractTitleRepository.GetAllContractTitlesAsync())
-                             .Select(t => new TestWithValue.Domain.ViewModels.Contract.DropdownItem { Value = t.TitleId.ToString(), Text = t.TitleName })
+                             .Select(t => new DropdownItem { Value = t.TitleId.ToString(), Text = t.TitleName })
                              .ToList(),
             ContractClauses = (await _contractClauseRepository.GetAllContractClausesAsync())
                               .Select(c => new DropdownItem { Value = c.ClauseId.ToString(), Text = c.ClauseText })
@@ -46,7 +46,16 @@ public class PartyContractService : IPartyContractService
                           ui => ui.UserId,
                           (u, ui) => new { u.Id, ui.FullName })
                     .Select(x => new DropdownItem { Value = x.Id, Text = x.FullName })
+                    .ToList(),
+            Lawyers= (await _userRepository.GetAllUsersAsync())
+                    .Join(await _userInfoRepository.GetAllUserInfosAsync(),
+                          u => u.Id,
+                          ui => ui.UserId,
+                          (u, ui) => new { u.Id, ui.FullName })
+                    .Select(x => new DropdownItem { Value = x.Id, Text = x.FullName })
                     .ToList()
+
+
         };
 
         return model;
@@ -55,8 +64,16 @@ public class PartyContractService : IPartyContractService
     // ایجاد قرارداد جدید
     public async Task CreateContractAsync(ContractCreateViewModel model)
     {
+        var nameTitle = await _contractTitleRepository.GetContractTitleByIdAsync(model.TitleId);
+        var partyOneName = await _userInfoRepository.GetUserInfoByUserIdAsync(model.PartyOneId);
+        var partyTwoName = await _userInfoRepository.GetUserInfoByUserIdAsync(model.PartyTwoId);
+
+
         var contract = new Tbl_PartyContract
         {
+            TitleName=nameTitle.TitleName,
+            PartyOneName=partyOneName.FullName,
+            PartyTwoName=partyTwoName.FullName,
             TitleId = model.TitleId,
             PartyOneId = model.PartyOneId,
             PartyTwoId = model.PartyTwoId,
@@ -104,4 +121,102 @@ public class PartyContractService : IPartyContractService
     {
         await _partyContractRepository.DeleteContractAsync(contractId);
     }
+    public async Task<ContractDetailsViewModel> GetContractDetailsAsync(int contractId)
+    {
+        var contract = await _partyContractRepository.GetContractWithClausesAsync(contractId);
+
+        if (contract == null)
+            return null; // یا یک ViewModel خالی
+
+        // ساخت ViewModel برای نمایش داده‌ها
+        var model = new ContractDetailsViewModel
+        {
+            ContractId = contract.ContractId,
+            Title = contract.TitleName,
+            PartyOneName = contract.PartyOneName,
+            PartyTwoName = contract.PartyTwoName,
+            ContractDate = contract.ContractDate,
+            Clauses = contract.ContractClauseMappings.Select(mapping => new ContractClauseViewModel
+            {
+                ClauseText = mapping.Clause.ClauseText // فرض بر این است که در Tbl_ContractClause یک ویژگی برای متن بند داریم
+            }).ToList()
+        };
+
+        return model;
+    }
+    public async Task<IEnumerable<ContractListViewModel>> GetAllContractsForIndexAsync()
+    {
+        var contracts = await _partyContractRepository.GetAllContractsAsync();
+
+        // تبدیل داده‌ها به مدل مورد نیاز برای ویو
+        return contracts.Select(contract => new ContractListViewModel
+        {
+            ContractId = contract.ContractId,
+            Title = contract.TitleName,
+            PartyOneName = contract.PartyOneName,
+            PartyTwoName = contract.PartyTwoName,
+            ContractDate = contract.ContractDate
+        }).ToList();
+    }
+    public async Task<IEnumerable<ContractListViewModel>> GetContractsForUserAsync(string userId)
+    {
+        var contracts = await _partyContractRepository.GetContractsForUserAsync(userId);
+
+        return contracts.Select(contract => new ContractListViewModel
+        {
+            ContractId = contract.ContractId,
+            Title = contract.TitleName,
+            PartyOneName = contract.PartyOneName,
+            PartyTwoName = contract.PartyTwoName,
+            ContractDate = contract.ContractDate,
+            Status = contract.Status, // استفاده از ویژگی جدید
+            UserStatus = contract.PartyOneId == userId ? contract.PartyOneStatus : contract.PartyTwoStatus // وضعیت خاص کاربر جاری
+        }).ToList();
+    }
+    public async Task<ContractDetailsViewModel> GetContractDetailsForUserAsync(int contractId, string userId)
+    {
+        var contract = await _partyContractRepository.GetContractByIdAsync(contractId);
+
+        if (contract == null || (contract.PartyOneId != userId && contract.PartyTwoId != userId))
+            return null;
+
+        return new ContractDetailsViewModel
+        {
+            ContractId = contract.ContractId,
+            Title = contract.TitleName,
+            PartyOneName = contract.PartyOneName,
+            PartyTwoName = contract.PartyTwoName,
+            ContractDate = contract.ContractDate,
+            Clauses = contract.ContractClauseMappings.Select(mapping => new ContractClauseViewModel
+            {
+                ClauseText = mapping.Clause.ClauseText
+            }).ToList(),
+            UserStatus = contract.PartyOneId == userId ? contract.PartyOneStatus : contract.PartyTwoStatus // استفاده از ویژگی جدید
+        };
+    }
+    public async Task<bool> ApproveOrRejectContractAsync(int contractId, string userId, string action)
+    {
+        var contract = await _partyContractRepository.GetContractByIdAsync(contractId);
+
+        if (contract == null || (contract.PartyOneId != userId && contract.PartyTwoId != userId))
+            return false;
+
+        if (contract.PartyOneId == userId)
+            contract.PartyOneStatus = action == "approve" ? "Approved" : "Rejected";
+        else if (contract.PartyTwoId == userId)
+            contract.PartyTwoStatus = action == "approve" ? "Approved" : "Rejected";
+
+        if (contract.PartyOneStatus == "Approved" && contract.PartyTwoStatus == "Approved")
+            contract.Status = "Approved";
+        else if (contract.PartyOneStatus == "Rejected" || contract.PartyTwoStatus == "Rejected")
+            contract.Status = "Rejected";
+
+        await _partyContractRepository.UpdateContractAsync(contract);
+        return true;
+    }
+
+
+
+
+
 }

@@ -40,6 +40,11 @@
                 margin: 10px 0;
             }
     </style>
+    @* اضافه کردن استایل‌ها در صورت تعریف بودن بخش Styles *@
+    @if (IsSectionDefined("Styles"))
+    {
+        @RenderSection("Styles", required: false)
+    }
 </head>
 <body>
     <header>
@@ -86,7 +91,7 @@
                 var user = await UserManager.GetUserAsync(User);
                 var userRoles = await UserManager.GetRolesAsync(user);
 
-                if (userRoles.Contains("User"))
+                @if (userRoles.Contains("User"))
                 {
                     <!-- منوی مخصوص User -->
                     <li class="nav-item">
@@ -110,15 +115,15 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Contract">لیست قرارداد</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="PartyContracts">‌لیست قرار دادهای دوطرفه</a>
+                    </li>
 
                 }
                 else if (userRoles.Contains("Agent"))
                 {
                     <!-- منوی مخصوص Agent -->
-@*                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="AgentDashboard">داشبورد پشتیبان</a>
-                    </li>
- *@                    <li class="nav-item">
+                    <li class="nav-item">
                         <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="RequestForm">درخواست‌های پشتیبان</a>
                     </li>
                     <li class="nav-item">
@@ -131,6 +136,17 @@
                         <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="TasksList">وظایف</a>
                     </li>
                 }
+                else if (userRoles.Contains("Lawyer"))
+                {
+                    <!-- منوی مخصوص Lawyer -->
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="CompleteInfo">‌تکمیل اطلاعات تکمیلی</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="PartyContracts">‌لیست قرار دادهای دوطرفه</a>
+                    </li>
+                }
+
             }
         </ul>
     </div>
